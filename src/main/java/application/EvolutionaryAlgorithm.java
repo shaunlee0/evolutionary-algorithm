@@ -3,12 +3,8 @@ package application;
 import model.Candidate;
 import model.Population;
 
-import java.util.Arrays;
 import java.util.Random;
 
-/**
- * Created by shaun on 27/09/16.
- */
 public class EvolutionaryAlgorithm {
 
     private static final Random random = new Random();
@@ -16,17 +12,17 @@ public class EvolutionaryAlgorithm {
     private static final int encodingLength = 16;
 
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
 
         boolean success = false;
 
-        Population population = new Population(populationSize,encodingLength,2,false);
+        Population population = new Population(populationSize, encodingLength, 2, false);
 
         int runs = 0;
 
         //do until exit condition met
-        while(runs < 1000){
-            Population offspring = new Population(populationSize,encodingLength,2,true);
+        while (runs < 10) {
+            Population offspring = new Population(populationSize, encodingLength, 2, true);
 
             //Create offspring using selection
             for (int i = 0; i < populationSize; i++) {
@@ -44,7 +40,7 @@ public class EvolutionaryAlgorithm {
 
             population = offspring;
 
-            runs ++;
+            runs++;
 
             //select parents
             Candidate[] parents = selectParents(population);
@@ -54,14 +50,11 @@ public class EvolutionaryAlgorithm {
 
             //mutate the offspring
 
-            //evaulate the new candidates
+            //evaluate the new candidates
 
             //select individuals for next population
 
         }
-
-
-
 
 
     }
@@ -72,10 +65,10 @@ public class EvolutionaryAlgorithm {
 
         int fitnessOfParent1 = evaluateCanidate(parent1);
         int fitnessOfParent2 = evaluateCanidate(parent2);
-        
-        if(parent1.getFitness() > parent2.getFitness()){
+
+        if (fitnessOfParent1 > fitnessOfParent2) {
             return parent1;
-        }else{
+        } else {
             return parent2;
         }
 
@@ -84,19 +77,19 @@ public class EvolutionaryAlgorithm {
     private static int evaluateCanidate(Candidate candidate) {
         int fitness = 0;
 
-        try{
+        try {
             int[] genes = candidate.getBinaryEncoding();
 
             for (int i = 0; i < genes.length; i++) {
-                if (genes[i]==1){
-                    fitness ++;
+                if (genes[i] == 1) {
+                    fitness++;
                 }
             }
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
-
+        candidate.setFitness(fitness);
 
         return fitness;
     }
@@ -115,7 +108,7 @@ public class EvolutionaryAlgorithm {
         for (int i = 0; i < 2; i++) {
             int randomInt = random.nextInt(populationSize);
             toReturn[i] = population.getPopulation()[randomInt];
-            if (toReturn[i]==null){
+            if (toReturn[i] == null) {
                 System.out.println("found null");
             }
         }
@@ -127,7 +120,7 @@ public class EvolutionaryAlgorithm {
         int populationFitness = 0;
 
         for (int i = 0; i < population.getPopulation().length; i++) {
-           populationFitness += evaluateCanidate(population.getPopulation()[i]);
+            populationFitness += evaluateCanidate(population.getPopulation()[i]);
         }
 
         System.out.println("population fitness = " + populationFitness);
