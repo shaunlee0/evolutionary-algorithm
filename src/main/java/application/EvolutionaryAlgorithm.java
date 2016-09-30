@@ -9,7 +9,7 @@ public class EvolutionaryAlgorithm {
 
     private static final Random random = new Random();
     private static final int populationSize = 100;
-    private static final int encodingLength = 16;
+    private static final int encodingLength = 4;
 
 
     public static void main(String[] args) {
@@ -29,10 +29,14 @@ public class EvolutionaryAlgorithm {
 
                 //select parents
                 Candidate[] parents = selectParents(population);
+                Candidate[] crossedOverOffspring = crossoverParents(parents);
+                Candidate[] mutatedOffSpring = mutateOffspring(crossedOverOffspring);
+
+
 
                 Candidate bestFromParents = getBestFromParents(parents);
-
                 offspring.getPopulation()[i] = bestFromParents;
+
 
             }
 
@@ -46,9 +50,6 @@ public class EvolutionaryAlgorithm {
             Candidate[] parents = selectParents(population);
 
             //recombine these parents
-            recombineParents(parents);
-
-            //mutate the offspring
 
             //evaluate the new candidates
 
@@ -57,6 +58,10 @@ public class EvolutionaryAlgorithm {
         }
 
 
+    }
+
+    private static Candidate[] mutateOffspring(Candidate[] crossedOverOffspring) {
+        return new Candidate[0];
     }
 
     private static Candidate getBestFromParents(Candidate[] parents) {
@@ -94,10 +99,27 @@ public class EvolutionaryAlgorithm {
         return fitness;
     }
 
-    private static Candidate[] recombineParents(Candidate[] recombinedParents) {
-        Candidate[] toReturn = new Candidate[2];
+    private static Candidate[] crossoverParents(Candidate[] recombinedParents) {
 
-        return toReturn;
+        int crossoverPoint = random.nextInt(encodingLength);
+
+        int[] firstParentTemp = new int[recombinedParents[0].getBinaryEncoding().length];
+        int[] secondParentTemp = new int[recombinedParents[1].getBinaryEncoding().length];
+
+        for (int i = 0; i < recombinedParents[0].getBinaryEncoding().length; i++) {
+            firstParentTemp[i] = recombinedParents[0].getBinaryEncoding()[i];
+        }
+
+        for (int i = 0; i < recombinedParents[1].getBinaryEncoding().length; i++) {
+            firstParentTemp[i] = recombinedParents[1].getBinaryEncoding()[i];
+        }
+
+        for (int i = crossoverPoint; i < encodingLength ; i++) {
+            recombinedParents[0].getBinaryEncoding()[i] = secondParentTemp[i];
+            recombinedParents[1].getBinaryEncoding()[i] = firstParentTemp[i];
+        }
+
+        return recombinedParents;
     }
 
     private static Candidate[] selectParents(Population population) {
@@ -108,9 +130,6 @@ public class EvolutionaryAlgorithm {
         for (int i = 0; i < 2; i++) {
             int randomInt = random.nextInt(populationSize);
             toReturn[i] = population.getPopulation()[randomInt];
-            if (toReturn[i] == null) {
-                System.out.println("found null");
-            }
         }
 
         return toReturn;

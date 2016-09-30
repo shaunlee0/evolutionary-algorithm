@@ -7,7 +7,7 @@ import java.util.Random;
  */
 public class Candidate {
     private int fitness;
-    private int[] encoding;
+    public int[] encoding;
     private int encodingLength;
 
     public Candidate(int encodingLength,int geneRangeUpperBound, boolean autoInitialise) {

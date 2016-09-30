@@ -42,6 +42,5 @@ public class Population {
 
     public void setPopulation(Candidate[] population) {
         this.population = population;
-
     }
 }
