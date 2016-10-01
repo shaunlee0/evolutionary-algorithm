@@ -11,12 +11,5 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: org.springframework:spring-context:unknown" level="project" />
-    <orderEntry type="library" name="Maven: org.springframework:spring-aop:unknown" level="project" />
-    <orderEntry type="library" name="Maven: org.springframework:spring-webmvc:unknown" level="project" />
-    <orderEntry type="library" name="Maven: org.springframework:spring-web:unknown" level="project" />
-    <orderEntry type="library" name="Maven: org.springframework.boot:spring-boot:unknown" level="project" />
-    <orderEntry type="library" name="Maven: org.springframework.boot:spring-boot-starter-web:unknown" level="project" />
-    <orderEntry type="library" name="Maven: org.springframework.boot:spring-boot-autoconfigure:unknown" level="project" />
   </component>
 </module>

@@ -6,7 +6,7 @@ import java.util.Random;
  * Created by shaun on 27/09/16.
  */
 public class Candidate {
-    private int fitness;
+    private double fitness;
     public int[] encoding;
     private int encodingLength;
 
@@ -23,11 +23,11 @@ public class Candidate {
 
     }
 
-    public int getFitness() {
+    public double getFitness() {
         return fitness;
     }
 
-    public void setFitness(int fitness) {
+    public void setFitness(double fitness) {
         this.fitness = fitness;
     }
 
