@@ -11,7 +11,7 @@ public class EvolutionaryAlgorithm {
     private static final Random random = new Random();
     private static final int populationSize = 10;
     public static final int encodingLength = 16;
-    private static final double mutationProbability = 0.1;
+    private static final double mutationProbability = 0.015;
     private static int generations = 1;
     private static Mutation mutation = new Mutation();
 
