@@ -10,13 +10,13 @@ public class Candidate {
     public int[] encoding;
     private int encodingLength;
 
-    public Candidate(int encodingLength,int geneRangeUpperBound, boolean autoInitialise) {
+    public Candidate(int encodingLength, boolean autoInitialise) {
         encoding = new int[encodingLength];
         this.encodingLength = encodingLength;
         if(autoInitialise){
             for (int i = 0; i < encodingLength; i++) {
                 Random random = new Random();
-                int value = random.nextInt(geneRangeUpperBound);
+                int value = random.nextInt(2);
                 encoding[i] = value;
             }
         }

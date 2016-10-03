@@ -15,16 +15,15 @@ public class EvolutionaryAlgorithm {
     private static int generations = 1;
     private static Mutation mutation = new Mutation();
 
-
     public static void main(String[] args) {
 
 
-        Population population = new Population(populationSize, encodingLength, 2, false);
+        Population population = new Population(populationSize, encodingLength, false);
         boolean success = evaluate(population);
 
         //do until exit condition met
         while (generations < 1000 && !success) {
-            Population offspring = new Population(populationSize, encodingLength, 2, true);
+            Population offspring = new Population(populationSize, encodingLength, true);
 
             //Create offspring using selection
             for (int i = 0; i < populationSize; i++) {
@@ -192,7 +191,7 @@ public class EvolutionaryAlgorithm {
         populationFitness = populationFitness / populationSize;
 
         if (populationFitness == 100) {
-            System.out.println("Population fitness at 100% solution found in " + generations + " generations");
+            System.out.println("Population fitness at 100%, solution found in " + generations + " generations.");
             return true;
         } else {
             System.out.println("population fitness = " + populationFitness + "%");

@@ -1,8 +1,5 @@
 package model;
 
-import java.util.HashSet;
-import java.util.Set;
-
 /**
  * Created by shaun on 27/09/16.
  */
@@ -12,13 +9,13 @@ public class Population {
     private int encodingLengthOfCandidate;
     private Candidate[] population;
 
-    public Population(int size,int encodingLengthOfCandidate,int geneRangeUpperBound, boolean isOffSpring) {
+    public Population(int size,int encodingLengthOfCandidate, boolean isOffSpring) {
 
         if(!isOffSpring){
             population = new Candidate[size];
             this.size = size;
             for (int i = 0; i < size; i++) {
-                Candidate candidate = new Candidate(encodingLengthOfCandidate,geneRangeUpperBound,true);
+                Candidate candidate = new Candidate(encodingLengthOfCandidate,true);
                 population[i] = candidate;
             }
         }else{
