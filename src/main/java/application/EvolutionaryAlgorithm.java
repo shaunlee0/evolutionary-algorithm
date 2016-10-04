@@ -8,23 +8,22 @@ import java.util.Random;
 
 public class EvolutionaryAlgorithm {
 
+    private static int generations = 1;
     private static final Random random = new Random();
+    private static MutationService mutationService = new MutationService();
+
+    //GA Constants.
     private static final int populationSize = 100;
     public static final int encodingLength = 8;
     private static final double mutationProbability = 0.01;
-    private static int generations = 1;
-    private static MutationService mutationService = new MutationService();
 
     public static void main(String[] args) {
-
-
         Population population = new Population(populationSize, encodingLength, true);
         boolean success = evaluatePopulation(population);
 
-        //do until exit condition met
         while (generations < 1000 && !success) {
 
-            success = evaluatePopulation(population);
+            evaluatePopulation(population);
             Candidate bestFromPopulation = population.getBestCandidate();
 
             Population offspring = new Population(populationSize, encodingLength, false);

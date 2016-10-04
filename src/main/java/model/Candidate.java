@@ -3,16 +3,14 @@ package model;
 import java.util.Random;
 
 /**
- * Created by shaun on 27/09/16.
+ * Created by shaun on 27/09/16. Candidate solution representation using an binary array of int to encode a solution.
  */
 public class Candidate {
     private double fitness;
-    public int[] encoding;
-    private int encodingLength;
+    private int[] encoding;
 
-    public Candidate(int encodingLength, boolean autoInitialise) {
+    Candidate(int encodingLength, boolean autoInitialise) {
         encoding = new int[encodingLength];
-        this.encodingLength = encodingLength;
         if(autoInitialise){
             for (int i = 0; i < encodingLength; i++) {
                 Random random = new Random();
@@ -20,7 +18,6 @@ public class Candidate {
                 encoding[i] = value;
             }
         }
-
     }
 
     public double getFitness() {
