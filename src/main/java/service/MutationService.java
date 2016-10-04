@@ -1,10 +1,10 @@
-package process;
+package service;
 
 
 import application.EvolutionaryAlgorithm;
 import model.Candidate;
 
-public class Mutation {
+public class MutationService {
 
     public boolean isFitnessHigherPostMutation(int[] mutatedEncoding, Candidate candidate){
 

@@ -2,7 +2,7 @@ package application;
 
 import model.Candidate;
 import model.Population;
-import process.Mutation;
+import service.MutationService;
 
 import java.util.Random;
 
@@ -13,18 +13,18 @@ public class EvolutionaryAlgorithm {
     public static final int encodingLength = 8;
     private static final double mutationProbability = 0.01;
     private static int generations = 1;
-    private static Mutation mutation = new Mutation();
+    private static MutationService mutationService = new MutationService();
 
     public static void main(String[] args) {
 
 
         Population population = new Population(populationSize, encodingLength, true);
-        boolean success = evaluate(population);
+        boolean success = evaluatePopulation(population);
 
         //do until exit condition met
         while (generations < 1000 && !success) {
 
-            success = evaluate(population);
+            success = evaluatePopulation(population);
             Candidate bestFromPopulation = population.getBestCandidate();
 
             Population offspring = new Population(populationSize, encodingLength, false);
@@ -38,7 +38,7 @@ public class EvolutionaryAlgorithm {
                 //select individuals for next population
                 Candidate bestFromParents = getBestFromParents(parents);
 
-                //Fill up to population size with offspring obtained from above process
+                //Fill up to population size with offspring obtained from above service
                 offspring.getPopulation()[i] = bestFromParents;
             }
 
@@ -55,7 +55,7 @@ public class EvolutionaryAlgorithm {
 
             population = offspring;
             population.getPopulation()[0] = bestFromPopulation;
-            success = evaluate(offspring);
+            success = evaluatePopulation(offspring);
             generations++;
         }
 
@@ -65,7 +65,7 @@ public class EvolutionaryAlgorithm {
         int[] candidateTemp = new int[candidate.getBinaryEncoding().length];
         System.arraycopy(candidate.getBinaryEncoding(), 0, candidateTemp, 0, encodingLength);
 
-        //Using mutation probability to decide whether to mutate this candidate
+        //Using mutationService probability to decide whether to mutate this candidate
         boolean mutateThisCandidate = random.nextDouble() <= mutationProbability;
 
         if (mutateThisCandidate) {
@@ -81,11 +81,11 @@ public class EvolutionaryAlgorithm {
 
             candidate.setBinaryEncoding(candidateTemp);
 
-//            //Only mutate if it provides higher fitness
-//            if (mutation.isFitnessHigherPostMutation(candidateTemp, candidate)) {
-
-//            }
-
+            //TODO: this is a fitness preference heuristic is this allowed?
+            //Only mutate if it provides higher fitness
+            //if (mutationService.isFitnessHigherPostMutation(candidateTemp, candidate)) {
+            //candidate.setBinaryEncoding(candidateTemp);
+            //}
         }
     }
 
@@ -105,30 +105,21 @@ public class EvolutionaryAlgorithm {
 
     public static double evaluateCandidate(Candidate candidate) {
         double fitness = 0;
+        int[] genes = candidate.getBinaryEncoding();
 
-        try {
-            int[] genes = candidate.getBinaryEncoding();
-
-            for (int val : genes) {
-                if (val == 1) {
-                    fitness++;
-                }
+        for (int val : genes) {
+            if (val == 1) {
+                fitness++;
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
 
         fitness = fitness / encodingLength * 100;
-
         candidate.setFitness(fitness);
-
         return fitness;
     }
 
     private static void crossOverParentsAtIndex(Population population, int parent1Index, int parent2Index) {
         int crossoverPoint = random.nextInt(encodingLength);
-
         int[] firstParentTemp = new int[encodingLength];
         int[] secondParentTemp = new int[encodingLength];
 
@@ -143,18 +134,16 @@ public class EvolutionaryAlgorithm {
 
     private static Candidate[] selectParents(Population population) {
         Candidate[] toReturn = new Candidate[2];
-
         int populationSize = population.getPopulation().length;
 
         for (int i = 0; i < 2; i++) {
             int randomInt = random.nextInt(populationSize);
             toReturn[i] = population.getPopulation()[randomInt];
         }
-
         return toReturn;
     }
 
-    private static boolean evaluate(Population population) {
+    private static boolean evaluatePopulation(Population population) {
         int populationFitness = 0;
 
         for (int i = 0; i < population.getPopulation().length; i++) {
@@ -171,6 +160,4 @@ public class EvolutionaryAlgorithm {
             return false;
         }
     }
-
-
 }
