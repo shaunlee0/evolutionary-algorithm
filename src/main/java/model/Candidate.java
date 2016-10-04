@@ -3,7 +3,7 @@ package model;
 import java.util.Random;
 
 /**
- * Created by shaun on 27/09/16. Candidate solution representation using an binary array of int to encode a solution.
+ * Candidate solution representation using an binary array of int to encode a solution.
  */
 public class Candidate {
     private double fitness;
@@ -20,7 +20,7 @@ public class Candidate {
         }
     }
 
-    public double getFitness() {
+    double getFitness() {
         return fitness;
     }
 

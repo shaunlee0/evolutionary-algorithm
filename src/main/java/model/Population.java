@@ -1,7 +1,7 @@
 package model;
 
 /**
- * Created by shaun on 27/09/16. Population class to encapsulate a population for use in subsequent generations.
+ * Population class to encapsulate a population for use in subsequent generations.
  */
 public class Population {
     private int size;
