@@ -9,9 +9,9 @@ public class Population {
     private int encodingLengthOfCandidate;
     private Candidate[] population;
 
-    public Population(int size,int encodingLengthOfCandidate, boolean isOffSpring) {
+    public Population(int size,int encodingLengthOfCandidate, boolean randomGeneration) {
 
-        if(!isOffSpring){
+        if(randomGeneration){
             population = new Candidate[size];
             this.size = size;
             for (int i = 0; i < size; i++) {
@@ -39,5 +39,20 @@ public class Population {
 
     public void setPopulation(Candidate[] population) {
         this.population = population;
+    }
+
+    public Candidate getBestCandidate() {
+
+        Candidate fittestIndividual = null;
+
+        for (Candidate candidate : population) {
+            if(fittestIndividual == null){
+                fittestIndividual = candidate;
+            }else if(candidate.getFitness() > fittestIndividual.getFitness()){
+                fittestIndividual = candidate;
+            }
+        }
+
+        return fittestIndividual;
     }
 }

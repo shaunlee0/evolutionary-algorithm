@@ -9,21 +9,25 @@ import java.util.Random;
 public class EvolutionaryAlgorithm {
 
     private static final Random random = new Random();
-    private static final int populationSize = 10;
-    public static final int encodingLength = 16;
-    private static final double mutationProbability = 0.015;
+    private static final int populationSize = 100;
+    public static final int encodingLength = 8;
+    private static final double mutationProbability = 0.01;
     private static int generations = 1;
     private static Mutation mutation = new Mutation();
 
     public static void main(String[] args) {
 
 
-        Population population = new Population(populationSize, encodingLength, false);
+        Population population = new Population(populationSize, encodingLength, true);
         boolean success = evaluate(population);
 
         //do until exit condition met
         while (generations < 1000 && !success) {
-            Population offspring = new Population(populationSize, encodingLength, true);
+
+            success = evaluate(population);
+            Candidate bestFromPopulation = population.getBestCandidate();
+
+            Population offspring = new Population(populationSize, encodingLength, false);
 
             //Create offspring using selection
             for (int i = 0; i < populationSize; i++) {
@@ -31,81 +35,60 @@ public class EvolutionaryAlgorithm {
                 //select parents
                 Candidate[] parents = selectParents(population);
 
-                //recombine these parents
-                Candidate[] crossedOverOffspring = crossoverParents(parents);
-
-                //Mutate offspring
-                Candidate[] mutatedOffSpring = mutateOffspring(crossedOverOffspring);
-
                 //select individuals for next population
-                Candidate bestFromParents = getBestFromParents(mutatedOffSpring);
+                Candidate bestFromParents = getBestFromParents(parents);
 
                 //Fill up to population size with offspring obtained from above process
                 offspring.getPopulation()[i] = bestFromParents;
             }
 
-            success = evaluate(offspring);
+            //for offspring crossover
+            for (int i = 0; i < populationSize; i++) {
+                crossOverParentsAtIndex(offspring, i, i + 1);
+                i++;
+            }
+
+            //Mutate on a given probability
+            for (int i = 0; i < populationSize; i++) {
+                mutateIndividual(offspring.getPopulation()[i]);
+            }
 
             population = offspring;
-
+            population.getPopulation()[0] = bestFromPopulation;
+            success = evaluate(offspring);
             generations++;
-
         }
-
 
     }
 
-    private static Candidate[] mutateOffspring(Candidate[] crossedOverOffspring) {
-
-        int[] firstParentTemp = new int[crossedOverOffspring[0].getBinaryEncoding().length];
-        int[] secondParentTemp = new int[crossedOverOffspring[1].getBinaryEncoding().length];
-
-        for (int i = 0; i < crossedOverOffspring[0].getBinaryEncoding().length; i++) {
-            firstParentTemp[i] = crossedOverOffspring[0].getBinaryEncoding()[i];
-        }
-
-        for (int i = 0; i < crossedOverOffspring[1].getBinaryEncoding().length; i++) {
-            secondParentTemp[i] = crossedOverOffspring[1].getBinaryEncoding()[i];
-        }
+    private static void mutateIndividual(Candidate candidate) {
+        int[] candidateTemp = new int[candidate.getBinaryEncoding().length];
+        System.arraycopy(candidate.getBinaryEncoding(), 0, candidateTemp, 0, encodingLength);
 
         //Using mutation probability to decide whether to mutate this candidate
-        boolean mutateThisCandidate = random.nextInt(100) <= mutationProbability * 100;
+        boolean mutateThisCandidate = random.nextDouble() <= mutationProbability;
 
         if (mutateThisCandidate) {
             int indexToMutate = random.nextInt(encodingLength);
+
+            int valueOfIndex = candidateTemp[indexToMutate];
             //Bitwise flip of first offspring.
-            if (firstParentTemp[indexToMutate] == 0) {
-                firstParentTemp[indexToMutate] = 1;
-            }else if (firstParentTemp[indexToMutate] == 1) {
-                firstParentTemp[indexToMutate]= 0;
+            if (valueOfIndex == 0) {
+                candidateTemp[indexToMutate] = 1;
+            } else if (valueOfIndex == 1) {
+                candidateTemp[indexToMutate] = 0;
             }
 
-            //Only mutate if it provides higher fitness
-            if(mutation.isFitnessHigherPostMutation(firstParentTemp,crossedOverOffspring[0])){
-                crossedOverOffspring[0].setBinaryEncoding(firstParentTemp);
-            }
+            candidate.setBinaryEncoding(candidateTemp);
+
+//            //Only mutate if it provides higher fitness
+//            if (mutation.isFitnessHigherPostMutation(candidateTemp, candidate)) {
+
+//            }
 
         }
-
-        mutateThisCandidate = random.nextInt(100) <= mutationProbability * 100;
-
-        if (mutateThisCandidate) {
-            int indexToMutate = random.nextInt(encodingLength);
-            //Bitwise flip of first offspring.
-            if (secondParentTemp[indexToMutate] == 0) {
-                secondParentTemp[indexToMutate] = 1;
-            }else if (secondParentTemp[indexToMutate] == 1) {
-                secondParentTemp[indexToMutate]= 0;
-            }
-
-            //Only mutate if it provides higher fitness
-            if(mutation.isFitnessHigherPostMutation(secondParentTemp,crossedOverOffspring[1])){
-                crossedOverOffspring[1].setBinaryEncoding(firstParentTemp);
-            }
-        }
-
-        return crossedOverOffspring;
     }
+
 
     private static Candidate getBestFromParents(Candidate[] parents) {
 
@@ -126,12 +109,12 @@ public class EvolutionaryAlgorithm {
         try {
             int[] genes = candidate.getBinaryEncoding();
 
-            for (int i = 0; i < genes.length; i++) {
-                int val = genes[i];
+            for (int val : genes) {
                 if (val == 1) {
                     fitness++;
                 }
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -143,29 +126,19 @@ public class EvolutionaryAlgorithm {
         return fitness;
     }
 
-    private static Candidate[] crossoverParents(Candidate[] recombinedParents) {
-
-
+    private static void crossOverParentsAtIndex(Population population, int parent1Index, int parent2Index) {
         int crossoverPoint = random.nextInt(encodingLength);
 
-        int[] firstParentTemp = new int[recombinedParents[0].getBinaryEncoding().length];
-        int[] secondParentTemp = new int[recombinedParents[1].getBinaryEncoding().length];
+        int[] firstParentTemp = new int[encodingLength];
+        int[] secondParentTemp = new int[encodingLength];
 
-        for (int i = 0; i < recombinedParents[0].getBinaryEncoding().length; i++) {
-            firstParentTemp[i] = recombinedParents[0].getBinaryEncoding()[i];
-        }
-
-        for (int i = 0; i < recombinedParents[1].getBinaryEncoding().length; i++) {
-            secondParentTemp[i] = recombinedParents[1].getBinaryEncoding()[i];
-        }
+        System.arraycopy(population.getPopulation()[parent1Index].getBinaryEncoding(), 0, firstParentTemp, 0, encodingLength);
+        System.arraycopy(population.getPopulation()[parent2Index].getBinaryEncoding(), 0, secondParentTemp, 0, encodingLength);
 
         for (int i = crossoverPoint; i < encodingLength; i++) {
-            recombinedParents[0].getBinaryEncoding()[i] = secondParentTemp[i];
-            recombinedParents[1].getBinaryEncoding()[i] = firstParentTemp[i];
+            population.getPopulation()[parent1Index].getBinaryEncoding()[i] = secondParentTemp[i];
+            population.getPopulation()[parent2Index].getBinaryEncoding()[i] = firstParentTemp[i];
         }
-
-
-        return recombinedParents;
     }
 
     private static Candidate[] selectParents(Population population) {
