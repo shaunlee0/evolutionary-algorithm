@@ -1,25 +1,21 @@
 package model;
 
+import java.util.ArrayList;
+
 /**
  * Population class to encapsulate a population for use in subsequent generations.
  */
 public class Population {
     private int size;
-    private Candidate[] population;
+    private ArrayList<Candidate> population;
+    private int encodingLengthOfCandidate;
 
-    public Population(int size,int encodingLengthOfCandidate, boolean randomGeneration) {
+    public Population(int size,int encodingLengthOfCandidate) {
 
-        if(randomGeneration){
-            population = new Candidate[size];
+            population = new ArrayList<Candidate>();
             this.size = size;
-            for (int i = 0; i < size; i++) {
-                Candidate candidate = new Candidate(encodingLengthOfCandidate,true);
-                population[i] = candidate;
-            }
-        }else{
-            population = new Candidate[size];
-            this.size = size;
-        }
+        this.encodingLengthOfCandidate = encodingLengthOfCandidate;
+
 
     }
 
@@ -31,12 +27,19 @@ public class Population {
         this.size = size;
     }
 
-    public Candidate[] getPopulation() {
+    public ArrayList<Candidate> getPopulation() {
         return population;
     }
 
-    public void setPopulation(Candidate[] population) {
+    public void setPopulation(ArrayList<Candidate> population) {
         this.population = population;
+    }
+
+    public void initialise(){
+        for (int i = 0; i < size; i++) {
+            Candidate candidate = new Candidate(encodingLengthOfCandidate,true);
+            population.add(candidate);
+        }
     }
 
     public Candidate getBestCandidate() {
@@ -52,5 +55,31 @@ public class Population {
         }
 
         return fittestIndividual;
+    }
+
+    public void clear() {
+        population.clear();
+    }
+
+    public void fill(ArrayList<Candidate> offspringPopulation) {
+
+        this.population = offspringPopulation;
+
+    }
+
+    public int getWorstFromPopulation() {
+
+        int unFittestIndividualIndex = 0;
+
+        for (int i = 0; i < population.size(); i++) {
+            Candidate unFittestIndividual = population.get(i);
+            if(unFittestIndividual == null){
+                unFittestIndividualIndex = i;
+            }else if(unFittestIndividual.getFitness() > unFittestIndividual.getFitness()){
+                unFittestIndividualIndex = i;
+            }
+        }
+
+        return unFittestIndividualIndex;
     }
 }

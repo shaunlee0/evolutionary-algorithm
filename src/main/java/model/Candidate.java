@@ -20,7 +20,7 @@ public class Candidate {
         }
     }
 
-    double getFitness() {
+    public double getFitness() {
         return fitness;
     }
 
