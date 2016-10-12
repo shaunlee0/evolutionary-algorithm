@@ -7,7 +7,7 @@ import java.util.Random;
  */
 public class Candidate {
     private double fitness;
-    private int[] encoding;
+    public int[] encoding;
 
     Candidate(int encodingLength, boolean autoInitialise) {
         encoding = new int[encodingLength];

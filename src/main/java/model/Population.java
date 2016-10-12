@@ -1,6 +1,7 @@
 package model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Population class to encapsulate a population for use in subsequent generations.
@@ -58,13 +59,11 @@ public class Population {
     }
 
     public void clear() {
-        population.clear();
+        this.population.clear();
     }
 
     public void fill(ArrayList<Candidate> offspringPopulation) {
-
-        this.population = offspringPopulation;
-
+        this.population = (ArrayList<Candidate>) offspringPopulation.clone();
     }
 
     public int getWorstFromPopulation() {

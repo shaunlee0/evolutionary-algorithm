@@ -19,7 +19,7 @@ public class EvolutionaryAlgorithm {
     //GA Constants.
     private static final int populationSize = 50;
     public static final int encodingLength = 50;
-    private static final double mutationProbability = 0.001;
+    private static final double mutationProbability = 0.01;
 
     public static void main(String[] args) {
         CsvFileWriter csvFileWriter = new CsvFileWriter();
@@ -52,18 +52,10 @@ public class EvolutionaryAlgorithm {
                 offspring.getPopulation().add(bestFromParents);
             }
 
-            //for offspring crossover
-            for (int i = 0; i < populationSize; i++) {
-                crossOverParentsAtIndex(offspring, i, i + 1);
-                i++;
-            }
-
-            //Mutate on a given probability
-            for (int i = 0; i < populationSize; i++) {
-                mutateIndividual(offspring.getPopulation().get(i));
-            }
-
+            crossOverOffspring(offspring);
+            mutatePopulation(offspring);
             evaluatePopulation(offspring);
+
             population.clear();
             population.fill(offspring.getPopulation());
             population.getPopulation().add(population.getWorstFromPopulation(),bestFromPopulation);
@@ -85,11 +77,22 @@ public class EvolutionaryAlgorithm {
 
     }
 
-    private static void mutateIndividual(Candidate candidate) {
-
-
+    private static void mutatePopulation(Population offspring) {
+        for (Candidate candidate : offspring.getPopulation()) {
+            for (int i = 0; i < candidate.encoding.length; i++) {
+                float rand = random.nextFloat();
+                boolean mutateThisGene = rand < mutationProbability;
+                if (mutateThisGene){
+                    int value =  candidate.encoding[i];
+                    if(value == 0){
+                        candidate.encoding[i]=1;
+                    }else{
+                        candidate.encoding[i]=0;
+                    }
+                }
+            }
+        }
     }
-
 
     private static Candidate getBestFromParents(Candidate[] parents) {
 
@@ -101,34 +104,37 @@ public class EvolutionaryAlgorithm {
         } else {
             return parents[1];
         }
-
     }
 
     public static double evaluateCandidate(Candidate candidate) {
         double fitness = 0;
-        int[] genes = candidate.getBinaryEncoding();
+        int[] genes = candidate.encoding;
 
         for (int val : genes) {
             if (val == 1) {
                 fitness++;
             }
         }
-        fitness = fitness / encodingLength * 100;
         candidate.setFitness(fitness);
         return fitness;
     }
 
-    private static void crossOverParentsAtIndex(Population population, int parent1Index, int parent2Index) {
-        int crossoverPoint = random.nextInt(encodingLength);
-        int[] firstParentTemp = new int[encodingLength];
-        int[] secondParentTemp = new int[encodingLength];
+    private static void crossOverOffspring(Population population){
+        //for offspring crossover
+        for (int i = 0; i < populationSize-1; i++) {
+            int crossoverPoint = random.nextInt(encodingLength);
+            int[] firstParentTemp = new int[encodingLength];
+            int[] secondParentTemp = new int[encodingLength];
 
-        System.arraycopy(population.getPopulation().get(parent1Index).getBinaryEncoding(), 0, firstParentTemp, 0, encodingLength);
-        System.arraycopy(population.getPopulation().get(parent2Index).getBinaryEncoding(), 0, secondParentTemp, 0, encodingLength);
+            System.arraycopy(population.getPopulation().get(i).encoding, 0, firstParentTemp, 0, encodingLength);
+            System.arraycopy(population.getPopulation().get(i+1).encoding, 0, secondParentTemp, 0, encodingLength);
 
-        for (int i = crossoverPoint; i < encodingLength; i++) {
-            population.getPopulation().get(parent1Index).getBinaryEncoding()[i] = secondParentTemp[i];
-            population.getPopulation().get(parent2Index).getBinaryEncoding()[i] = firstParentTemp[i];
+            for (int j = crossoverPoint; j < encodingLength; j++) {
+                population.getPopulation().get(i).encoding[j] = secondParentTemp[j];
+                population.getPopulation().get(i+1).encoding[j] = firstParentTemp[j];
+            }
+
+            i++;
         }
     }
 
@@ -150,8 +156,6 @@ public class EvolutionaryAlgorithm {
             populationFitness += evaluateCandidate(population.getPopulation().get(i));
         }
 
-        populationFitness = populationFitness / populationSize;
-
         if (populationFitness == 100) {
             System.out.println("Population fitness at 100%, solution found in " + generations + " generations.");
             return true;
@@ -167,10 +171,6 @@ public class EvolutionaryAlgorithm {
         for (int i = 0; i < population.getPopulation().size(); i++) {
             populationFitness += evaluateCandidate(population.getPopulation().get(i));
         }
-        return populationFitness / populationSize;
-    }
-
-    public static void writeResult(int generation, int value){
-
+        return populationFitness;
     }
 }
