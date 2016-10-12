@@ -11,12 +11,11 @@ public class Population {
     private ArrayList<Candidate> population;
     private int encodingLengthOfCandidate;
 
-    public Population(int size,int encodingLengthOfCandidate) {
+    public Population(int size, int encodingLengthOfCandidate) {
 
-            population = new ArrayList<Candidate>();
-            this.size = size;
+        population = new ArrayList<Candidate>();
+        this.size = size;
         this.encodingLengthOfCandidate = encodingLengthOfCandidate;
-
 
     }
 
@@ -36,9 +35,9 @@ public class Population {
         this.population = population;
     }
 
-    public void initialise(){
+    public void initialise() {
         for (int i = 0; i < size; i++) {
-            Candidate candidate = new Candidate(encodingLengthOfCandidate,true);
+            Candidate candidate = new Candidate(encodingLengthOfCandidate, true);
             population.add(candidate);
         }
     }
@@ -48,14 +47,14 @@ public class Population {
         Candidate fittestIndividual = null;
 
         for (Candidate candidate : population) {
-            if(fittestIndividual == null){
+            if (fittestIndividual == null) {
                 fittestIndividual = candidate;
-            }else if(candidate.getFitness() > fittestIndividual.getFitness()){
+            } else if (candidate.getFitness() > fittestIndividual.getFitness()) {
                 fittestIndividual = candidate;
             }
         }
 
-        return fittestIndividual;
+        return new Candidate(fittestIndividual);
     }
 
     public void clear() {
@@ -63,7 +62,7 @@ public class Population {
     }
 
     public void fill(ArrayList<Candidate> offspringPopulation) {
-        this.population = (ArrayList<Candidate>) offspringPopulation.clone();
+        this.population = new ArrayList<Candidate>(offspringPopulation);
     }
 
     public int getWorstFromPopulation() {
@@ -72,9 +71,9 @@ public class Population {
 
         for (int i = 0; i < population.size(); i++) {
             Candidate unFittestIndividual = population.get(i);
-            if(unFittestIndividual == null){
+            if (unFittestIndividual == null) {
                 unFittestIndividualIndex = i;
-            }else if(unFittestIndividual.getFitness() > unFittestIndividual.getFitness()){
+            } else if (unFittestIndividual.getFitness() > unFittestIndividual.getFitness()) {
                 unFittestIndividualIndex = i;
             }
         }

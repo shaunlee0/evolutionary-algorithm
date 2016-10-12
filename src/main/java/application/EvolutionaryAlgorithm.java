@@ -2,96 +2,98 @@ package application;
 
 import model.Candidate;
 import model.Population;
-import service.MutationService;
 import util.CsvFileWriter;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Random;
 
 public class EvolutionaryAlgorithm {
 
     private static int generations = 1;
     private static final Random random = new Random();
-    private static MutationService mutationService = new MutationService();
 
     //GA Constants.
     private static final int populationSize = 50;
     public static final int encodingLength = 50;
-    private static final double mutationProbability = 0.01;
+    public static final double mutationProbability = 0.01;
+    public static final double crossoverProbability = 0.3;
 
     public static void main(String[] args) {
+        int totalOnesPossible = populationSize * encodingLength;
         CsvFileWriter csvFileWriter = new CsvFileWriter();
         Population population = new Population(populationSize, encodingLength);
         population.initialise();
 
         ArrayList<ArrayList<String>> audit = new ArrayList<ArrayList<String>>();
 
-        boolean success = evaluatePopulation(population);
-
-        while (generations < 50 && !success) {
-
+        float k = (((float) evaluatePopulation(population)) / ((float) totalOnesPossible)) * 100f;
+        boolean success = k == 100;
 
 
-            evaluatePopulation(population);
+        while (generations < 500 && !success) {
+
+            int currentFitness = evaluatePopulation(population);
             Candidate bestFromPopulation = population.getBestCandidate();
-
-            Population offspring = new Population(populationSize, encodingLength);
-
-            //Create offspring using selection
-            for (int i = 0; i < populationSize; i++) {
-
-                //select parents
-                Candidate[] parents = selectParents(population);
-
-                //select individuals for next population
-                Candidate bestFromParents = getBestFromParents(parents);
-
-                //Fill up to population size with offspring obtained from above service
-                offspring.getPopulation().add(bestFromParents);
-            }
-
-            crossOverOffspring(offspring);
-            mutatePopulation(offspring);
-            evaluatePopulation(offspring);
-
+            Population offspring = performSelection(population);
+            offspring = crossOverOffspring(offspring);
+            offspring = mutatePopulation(offspring);
             population.clear();
             population.fill(offspring.getPopulation());
-            population.getPopulation().add(population.getWorstFromPopulation(),bestFromPopulation);
-            success = evaluatePopulation(population);
+            offspring.clear();
+            population.getPopulation().remove(population.getWorstFromPopulation());
+            population.getPopulation().add(bestFromPopulation);
+
+            k = (((float) evaluatePopulation(population)) / ((float) totalOnesPossible)) * 100f;
+            success = k == 100;
+            if (success) {
+                System.out.println("here");
+            }
             generations++;
 
             ArrayList<String> auditValues = new ArrayList<String>();
             auditValues.add((String.valueOf(evaluatePopulationGetMean(population))));
             auditValues.add(String.valueOf(bestFromPopulation.getFitness()));
             auditValues.add(String.valueOf(generations));
-
             audit.add(auditValues);
+
+            System.out.println("Generation = " + bestFromPopulation.getFitness());
         }
 
-        String csv = "/home/shaun/Desktop/ga.csv";
+        System.out.println("End of loop at : " + population.getBestCandidate().getFitness() + " out of possible " + totalOnesPossible / populationSize);
 
-        CsvFileWriter.writeCsvFile(csv,audit);
-
-
+//        String csv = "/home/shaun/Desktop/ga.csv";
+//        CsvFileWriter.writeCsvFile(csv,audit);
     }
 
-    private static void mutatePopulation(Population offspring) {
+    private static Population performSelection(Population population) {
+        Population offspring = new Population(populationSize, encodingLength);
+        for (int i = 0; i < populationSize; i++) {
+            //select parents
+            Candidate[] parents = selectParents(population);
+
+            //select individuals for next population
+            Candidate bestFromParents = getBestFromParents(parents);
+
+            //Fill up to population size with offspring obtained from above service
+            offspring.getPopulation().add(bestFromParents);
+        }
+        return offspring;
+    }
+
+    public static Population mutatePopulation(Population offspring) {
+        int mutatedCount = 0;
         for (Candidate candidate : offspring.getPopulation()) {
             for (int i = 0; i < candidate.encoding.length; i++) {
                 float rand = random.nextFloat();
-                boolean mutateThisGene = rand < mutationProbability;
-                if (mutateThisGene){
-                    int value =  candidate.encoding[i];
-                    if(value == 0){
-                        candidate.encoding[i]=1;
-                    }else{
-                        candidate.encoding[i]=0;
-                    }
+                boolean mutateThisGene = rand <= mutationProbability;
+                if (mutateThisGene) {
+                    mutatedCount ++;
+                    candidate.encoding[i] = 1 - candidate.encoding[i];
                 }
             }
         }
+        System.out.println("mutated " + mutatedCount + " out of possible " + populationSize * encodingLength );
+        return offspring;
     }
 
     private static Candidate getBestFromParents(Candidate[] parents) {
@@ -119,23 +121,30 @@ public class EvolutionaryAlgorithm {
         return fitness;
     }
 
-    private static void crossOverOffspring(Population population){
-        //for offspring crossover
-        for (int i = 0; i < populationSize-1; i++) {
-            int crossoverPoint = random.nextInt(encodingLength);
-            int[] firstParentTemp = new int[encodingLength];
-            int[] secondParentTemp = new int[encodingLength];
+    public static Population crossOverOffspring(Population offspring) {
+        for (int i = 0; i < populationSize - 1; i++) {
 
-            System.arraycopy(population.getPopulation().get(i).encoding, 0, firstParentTemp, 0, encodingLength);
-            System.arraycopy(population.getPopulation().get(i+1).encoding, 0, secondParentTemp, 0, encodingLength);
+            float rand = random.nextFloat();
+            boolean crossoverParents = rand <= crossoverProbability;
 
-            for (int j = crossoverPoint; j < encodingLength; j++) {
-                population.getPopulation().get(i).encoding[j] = secondParentTemp[j];
-                population.getPopulation().get(i+1).encoding[j] = firstParentTemp[j];
+            if (crossoverParents){
+                int crossoverPoint = random.nextInt(encodingLength);
+                int[] firstParentTemp = new int[encodingLength];
+                int[] secondParentTemp = new int[encodingLength];
+
+                System.arraycopy(offspring.getPopulation().get(i).encoding, 0, firstParentTemp, 0, encodingLength);
+                System.arraycopy(offspring.getPopulation().get(i + 1).encoding, 0, secondParentTemp, 0, encodingLength);
+
+                for (int j = crossoverPoint; j < encodingLength; j++) {
+                    offspring.getPopulation().get(i).encoding[j] = secondParentTemp[j];
+                    offspring.getPopulation().get(i + 1).encoding[j] = firstParentTemp[j];
+                }
             }
 
             i++;
         }
+
+        return offspring;
     }
 
     private static Candidate[] selectParents(Population population) {
@@ -143,26 +152,38 @@ public class EvolutionaryAlgorithm {
         int populationSize = population.getPopulation().size();
 
         for (int i = 0; i < 2; i++) {
+
+//          Tournament selection
             int randomInt = random.nextInt(populationSize);
             toReturn[i] = population.getPopulation().get(randomInt);
+//            toReturn[i] = selectIndividualUsingRouletteWheelSelection(population);
         }
         return toReturn;
     }
 
-    private static boolean evaluatePopulation(Population population) {
-        int populationFitness = 0;
+    private static Candidate selectIndividualUsingRouletteWheelSelection(Population population) {
+        Candidate candidate = null;
+        int totalSum = 0;
+        for (int i = 0; i < population.getPopulation().size(); i++) {
+            totalSum += evaluateCandidate(population.getPopulation().get(i));
+        }
+        int randNumber = random.nextInt(totalSum);
+        int partialSum = 0;
+        for (int j = 0; j < population.getPopulation().size(); j++) {
+            partialSum += evaluateCandidate(population.getPopulation().get(j));
+            if (partialSum >= randNumber) {
+                candidate = population.getPopulation().get(j);
+            }
+        }
+        return candidate;
+    }
 
+    private static int evaluatePopulation(Population population) {
+        int populationFitness = 0;
         for (int i = 0; i < population.getPopulation().size(); i++) {
             populationFitness += evaluateCandidate(population.getPopulation().get(i));
         }
-
-        if (populationFitness == 100) {
-            System.out.println("Population fitness at 100%, solution found in " + generations + " generations.");
-            return true;
-        } else {
-            System.out.println("population fitness = " + populationFitness + "%");
-            return false;
-        }
+        return populationFitness;
     }
 
     private static int evaluatePopulationGetMean(Population population) {

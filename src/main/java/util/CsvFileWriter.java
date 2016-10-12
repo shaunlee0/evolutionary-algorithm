@@ -25,8 +25,6 @@ public class CsvFileWriter {
 
             fileWriter = new FileWriter(fileName);
 
-
-
             //Write the CSV file header
 
             fileWriter.append(FILE_HEADER.toString());

@@ -1,5 +1,7 @@
 package model;
 
+import application.EvolutionaryAlgorithm;
+
 import java.util.Random;
 
 /**
@@ -9,7 +11,7 @@ public class Candidate {
     private double fitness;
     public int[] encoding;
 
-    Candidate(int encodingLength, boolean autoInitialise) {
+    public Candidate(int encodingLength, boolean autoInitialise) {
         encoding = new int[encodingLength];
         if(autoInitialise){
             for (int i = 0; i < encodingLength; i++) {
@@ -18,6 +20,11 @@ public class Candidate {
                 encoding[i] = value;
             }
         }
+    }
+
+    public Candidate(Candidate another){
+        this.fitness = another.getFitness();
+        this.encoding = another.getBinaryEncoding().clone();
     }
 
     public double getFitness() {
@@ -34,5 +41,13 @@ public class Candidate {
 
     public void setBinaryEncoding(int[] encoding) {
         this.encoding = encoding;
+    }
+
+    public int getGene(int index) {
+        return this.encoding[index];
+    }
+
+    public void setGene(int index, int gene) {
+        this.encoding[index] = gene;
     }
 }
