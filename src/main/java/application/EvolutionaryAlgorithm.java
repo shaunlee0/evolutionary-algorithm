@@ -116,7 +116,7 @@ public class EvolutionaryAlgorithm {
     public static double evaluateCandidate(Candidate candidate) {
 
         for (Rule rule : candidate.getRules()){
-
+            //TODO : Write fitness function for data set 1
         }
 
         double fitness = 0;
