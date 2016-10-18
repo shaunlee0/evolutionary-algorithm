@@ -2,6 +2,8 @@ package model;
 
 import application.EvolutionaryAlgorithm;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 /**
@@ -10,21 +12,38 @@ import java.util.Random;
 public class Candidate {
     private double fitness;
     public int[] encoding;
+    public ArrayList<Rule> rules;
 
     public Candidate(int encodingLength, boolean autoInitialise) {
         encoding = new int[encodingLength];
+        rules = new ArrayList<Rule>();
         if(autoInitialise){
             for (int i = 0; i < encodingLength; i++) {
                 Random random = new Random();
                 int value = random.nextInt(2);
                 encoding[i] = value;
             }
+            extractRules();
         }
     }
 
     public Candidate(Candidate another){
         this.fitness = another.getFitness();
         this.encoding = another.getBinaryEncoding().clone();
+    }
+
+    public ArrayList<Rule> getRules() {
+        return rules;
+    }
+
+    public void extractRules(){
+        int count = 0;
+        for (int i = 0; i < encoding.length - 5; i+=6) {
+            int[] conditions = Arrays.copyOfRange(encoding,i,i+5);
+            int actual = encoding[i+5];
+            Rule rule = new Rule(conditions,actual);
+            rules.add(rule);
+        }
     }
 
     public double getFitness() {

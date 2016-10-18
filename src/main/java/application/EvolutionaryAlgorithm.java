@@ -1,7 +1,10 @@
 package application;
 
 import model.Candidate;
+import model.Data;
 import model.Population;
+import model.Rule;
+import service.TextFileService;
 import util.CsvFileWriter;
 
 import java.util.ArrayList;
@@ -14,11 +17,13 @@ public class EvolutionaryAlgorithm {
 
     //GA Constants.
     private static final int populationSize = 50;
-    private static final int encodingLength = 50;
+    private static final int encodingLength = 60;
     private static final double mutationProbability = 0.001;
-    private static final double crossoverProbability = 0.8;
+    private static final double crossoverProbability = 1.0;
+    private static TextFileService textFileService = new TextFileService();
 
     public static void main(String[] args) {
+        ArrayList<Data> data = textFileService.getDataFromTextFile("data1.txt");
         int totalOnesPossible = populationSize * encodingLength;
         Population population = new Population(populationSize, encodingLength);
         population.initialise();
@@ -53,7 +58,7 @@ public class EvolutionaryAlgorithm {
 
             //Create CSV of mean and best fitness.
             ArrayList<String> auditValues = new ArrayList<String>();
-            auditValues.add((String.valueOf((evaluatePopulationGetMean(population) / ((float) totalOnesPossible)) / populationSize)));
+            auditValues.add((String.valueOf((evaluatePopulationGetMean(population)))));
             auditValues.add(String.valueOf(bestFromPopulation.getFitness()));
             auditValues.add(String.valueOf(generations));
             audit.add(auditValues);
@@ -109,6 +114,11 @@ public class EvolutionaryAlgorithm {
     }
 
     public static double evaluateCandidate(Candidate candidate) {
+
+        for (Rule rule : candidate.getRules()){
+
+        }
+
         double fitness = 0;
         int[] genes = candidate.encoding;
 
@@ -192,6 +202,6 @@ public class EvolutionaryAlgorithm {
         for (int i = 0; i < population.getPopulation().size(); i++) {
             populationFitness += evaluateCandidate(population.getPopulation().get(i));
         }
-        return populationFitness;
+        return populationFitness / populationSize;
     }
 }
