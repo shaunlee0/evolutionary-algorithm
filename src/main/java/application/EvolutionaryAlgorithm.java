@@ -9,18 +9,17 @@ import java.util.Random;
 
 public class EvolutionaryAlgorithm {
 
-    private static int generations = 1;
+    private static int generations = 0;
     private static final Random random = new Random();
 
     //GA Constants.
     private static final int populationSize = 50;
-    public static final int encodingLength = 50;
-    public static final double mutationProbability = 0.01;
-    public static final double crossoverProbability = 0.3;
+    private static final int encodingLength = 50;
+    private static final double mutationProbability = 0.001;
+    private static final double crossoverProbability = 0.8;
 
     public static void main(String[] args) {
         int totalOnesPossible = populationSize * encodingLength;
-        CsvFileWriter csvFileWriter = new CsvFileWriter();
         Population population = new Population(populationSize, encodingLength);
         population.initialise();
 
@@ -30,16 +29,18 @@ public class EvolutionaryAlgorithm {
         boolean success = k == 100;
 
 
-        while (generations < 500 && !success) {
+        while (generations < 50 && !success) {
 
-            int currentFitness = evaluatePopulation(population);
             Candidate bestFromPopulation = population.getBestCandidate();
+
             Population offspring = performSelection(population);
             offspring = crossOverOffspring(offspring);
             offspring = mutatePopulation(offspring);
+
             population.clear();
             population.fill(offspring.getPopulation());
             offspring.clear();
+
             population.getPopulation().remove(population.getWorstFromPopulation());
             population.getPopulation().add(bestFromPopulation);
 
@@ -50,19 +51,19 @@ public class EvolutionaryAlgorithm {
             }
             generations++;
 
+            //Create CSV of mean and best fitness.
             ArrayList<String> auditValues = new ArrayList<String>();
-            auditValues.add((String.valueOf(evaluatePopulationGetMean(population))));
+            auditValues.add((String.valueOf((evaluatePopulationGetMean(population) / ((float) totalOnesPossible)) / populationSize)));
             auditValues.add(String.valueOf(bestFromPopulation.getFitness()));
             auditValues.add(String.valueOf(generations));
             audit.add(auditValues);
 
-            System.out.println("Generation = " + bestFromPopulation.getFitness());
         }
 
         System.out.println("End of loop at : " + population.getBestCandidate().getFitness() + " out of possible " + totalOnesPossible / populationSize);
 
-//        String csv = "/home/shaun/Desktop/ga.csv";
-//        CsvFileWriter.writeCsvFile(csv,audit);
+        String csv = "/home/shaun/Desktop/ga.csv";
+        CsvFileWriter.writeCsvFile(csv,audit);
     }
 
     private static Population performSelection(Population population) {
@@ -92,7 +93,6 @@ public class EvolutionaryAlgorithm {
                 }
             }
         }
-        System.out.println("mutated " + mutatedCount + " out of possible " + populationSize * encodingLength );
         return offspring;
     }
 
