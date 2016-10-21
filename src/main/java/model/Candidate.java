@@ -16,7 +16,7 @@ public class Candidate {
 
     public Candidate(int encodingLength, boolean autoInitialise) {
         encoding = new int[encodingLength];
-        rules = new ArrayList<Rule>();
+        rules = new ArrayList<>();
         if(autoInitialise){
             for (int i = 0; i < encodingLength; i++) {
                 Random random = new Random();
@@ -30,6 +30,7 @@ public class Candidate {
     public Candidate(Candidate another){
         this.fitness = another.getFitness();
         this.encoding = another.getBinaryEncoding().clone();
+        rules = new ArrayList<>();
     }
 
     public ArrayList<Rule> getRules() {
@@ -37,12 +38,22 @@ public class Candidate {
     }
 
     public void extractRules(){
+        if(this.rules==null){
+            System.out.println("Rules are null");
+        }
+        if(this.rules.size() > 1){
+            this.rules.clear();
+        }
         int count = 0;
         for (int i = 0; i < encoding.length - 5; i+=6) {
             int[] conditions = Arrays.copyOfRange(encoding,i,i+5);
             int actual = encoding[i+5];
             Rule rule = new Rule(conditions,actual);
             rules.add(rule);
+        }
+        boolean ruleSizeCorrect = rules.size() == 10;
+        if(!ruleSizeCorrect){
+            System.out.println("Rules size not 10");
         }
     }
 

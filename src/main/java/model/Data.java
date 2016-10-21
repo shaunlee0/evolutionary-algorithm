@@ -4,20 +4,20 @@ package model;
  * Created by shaun on 18/10/16.
  */
 public class Data {
-    int[] variables;
+    int[] conditions;
     int output;
 
-    public Data(int[] variables, int output) {
-        this.variables = variables;
+    public Data(int[] conditions, int output) {
+        this.conditions = conditions;
         this.output = output;
     }
 
-    public int[] getVariables() {
-        return variables;
+    public int[] getConditions() {
+        return conditions;
     }
 
-    public void setVariables(int[] variables) {
-        this.variables = variables;
+    public void setConditions(int[] conditions) {
+        this.conditions = conditions;
     }
 
     public int getOutput() {

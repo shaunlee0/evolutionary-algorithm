@@ -21,12 +21,14 @@ public class EvolutionaryAlgorithm {
     private static final double mutationProbability = 0.001;
     private static final double crossoverProbability = 1.0;
     private static TextFileService textFileService = new TextFileService();
+    private static ArrayList<Data> data = textFileService.getDataFromTextFile("data1.txt");
+
 
     public static void main(String[] args) {
-        ArrayList<Data> data = textFileService.getDataFromTextFile("data1.txt");
         int totalOnesPossible = populationSize * encodingLength;
         Population population = new Population(populationSize, encodingLength);
         population.initialise();
+        evaluatePopulation(population);
 
         ArrayList<ArrayList<String>> audit = new ArrayList<ArrayList<String>>();
 
@@ -39,29 +41,36 @@ public class EvolutionaryAlgorithm {
             Candidate bestFromPopulation = population.getBestCandidate();
 
             Population offspring = performSelection(population);
+            System.out.println("Selection performed");
             offspring = crossOverOffspring(offspring);
-            offspring = mutatePopulation(offspring);
+//            System.out.println("Crossover performed");
+//            offspring = mutatePopulation(offspring);
+//            System.out.println("Mutation performed");
+
 
             population.clear();
             population.fill(offspring.getPopulation());
             offspring.clear();
 
             population.getPopulation().remove(population.getWorstFromPopulation());
-            population.getPopulation().add(bestFromPopulation);
+            population.getPopulation().add(new Candidate(bestFromPopulation));
 
-            k = (((float) evaluatePopulation(population)) / ((float) totalOnesPossible)) * 100f;
-            success = k == 100;
-            if (success) {
-                System.out.println("here");
-            }
+//            k = (((float) evaluatePopulation(population)) / ((float) totalOnesPossible)) * 100f;
+//            success = k == 100;
+//            if (success) {
+//                System.out.println("here");
+//            }
             generations++;
 
-            //Create CSV of mean and best fitness.
-            ArrayList<String> auditValues = new ArrayList<String>();
-            auditValues.add((String.valueOf((evaluatePopulationGetMean(population)))));
-            auditValues.add(String.valueOf(bestFromPopulation.getFitness()));
-            auditValues.add(String.valueOf(generations));
-            audit.add(auditValues);
+            System.out.println("Total fitness = " + evaluatePopulation(population));
+
+
+//            //Create CSV of mean and best fitness.
+//            ArrayList<String> auditValues = new ArrayList<String>();
+//            auditValues.add((String.valueOf((evaluatePopulationGetMean(population)))));
+//            auditValues.add(String.valueOf(bestFromPopulation.getFitness()));
+//            auditValues.add(String.valueOf(generations));
+//            audit.add(auditValues);
 
         }
 
@@ -114,22 +123,61 @@ public class EvolutionaryAlgorithm {
     }
 
     public static double evaluateCandidate(Candidate candidate) {
+        double fitness = 0;
+        candidate.extractRules();
+        ArrayList<Rule> candidateRules = candidate.getRules();
 
-        for (Rule rule : candidate.getRules()){
-            //TODO : Write fitness function for data set 1
+        if(candidateRules==null){
+            System.out.println("Rules are null");
         }
 
-        double fitness = 0;
-        int[] genes = candidate.encoding;
-
-        for (int val : genes) {
-            if (val == 1) {
-                fitness++;
+        for (Rule rule : candidate.getRules()){
+            if(compareRuleToData(rule)){
+            //If this rule and output match those in data set file, increment fitness by one.
+                fitness ++;
             }
+        }
+
+        if(fitness >= 10){
+            System.out.println("found the best one!");
         }
         candidate.setFitness(fitness);
         return fitness;
     }
+
+    private static boolean compareRuleToData(Rule rule) {
+        boolean result = false;
+        for (Data dataElement : data){
+            boolean sameConditions = compareArrays(rule.getConditions(),dataElement.getConditions());
+            boolean sameOutput = rule.getActual() == dataElement.getOutput();
+            result = sameConditions && sameOutput;
+            if (result){
+                return result;
+            }
+        }
+        return result;
+    }
+
+
+
+    public static boolean compareArrays(int[] array1, int[] array2) {
+        boolean b = true;
+        if (array1 != null && array2 != null){
+            if (array1.length != array2.length)
+                b = false;
+            else
+                for (int i = 0; i < array2.length; i++) {
+                    if (array2[i] != array1[i]) {
+                        b = false;
+                    }
+                }
+        }else{
+            b = false;
+        }
+        return b;
+    }
+
+
 
     public static Population crossOverOffspring(Population offspring) {
         for (int i = 0; i < populationSize - 1; i++) {

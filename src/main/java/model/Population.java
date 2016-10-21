@@ -62,7 +62,12 @@ public class Population {
     }
 
     public void fill(ArrayList<Candidate> offspringPopulation) {
-        this.population = new ArrayList<Candidate>(offspringPopulation);
+        ArrayList<Candidate> newCandidates = new ArrayList<>();
+        for (Candidate candidate : offspringPopulation){
+            Candidate newCandidate = new Candidate(candidate);
+            newCandidates.add(newCandidate);
+        }
+        this.population = newCandidates;
     }
 
     public int getWorstFromPopulation() {
