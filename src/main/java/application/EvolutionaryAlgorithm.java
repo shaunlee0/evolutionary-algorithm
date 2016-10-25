@@ -18,10 +18,10 @@ public class EvolutionaryAlgorithm {
     private static final Random random = new Random();
 
     //GA Constants.
-    private static final int populationSize = 50;
+    private static final int populationSize = 1000;
     private static final int encodingLength = 192;
     private static final double mutationProbability = 0.001;
-    private static final double crossoverProbability = 1.0;
+    private static final double crossoverProbability = 0.5;
     private static TextFileService textFileService = new TextFileService();
     private static ArrayList<Data> data = textFileService.getDataFromTextFile("data1.txt");
 
@@ -32,41 +32,49 @@ public class EvolutionaryAlgorithm {
         population.initialise();
         System.out.println("initial fitness = " + evaluatePopulation(population));
 
-        ArrayList<ArrayList<String>> audit = new ArrayList<ArrayList<String>>();
+        ArrayList<ArrayList<String>> audit = new ArrayList<>();
 
         boolean success = evaluatePopulation(population) == 1;
 
 
-        while (generations < 50 && !success) {
+        while (generations < 200 && !success) {
+//        while (!success) {
 
-            Candidate bestFromPopulation = population.getBestCandidate();
+                Candidate bestFromPopulation = population.getBestCandidate();
 
-            Population offspring = performSelection(population);
-            offspring = crossOverOffspring(offspring);
-            offspring = mutatePopulation(offspring);
+                Population offspring = performSelection(population);
+                offspring = crossOverOffspring(offspring);
+                offspring = mutatePopulation(offspring);
 
-            population.clear();
-            population.fill(offspring.getPopulation());
-            offspring.clear();
+                population.clear();
+                population.fill(offspring.getPopulation());
+                offspring.clear();
 
-            population.getPopulation().remove(population.getWorstFromPopulation());
-            population.getPopulation().add(new Candidate(bestFromPopulation));
+                population.getPopulation().remove(population.getWorstFromPopulation());
+                population.getPopulation().add(new Candidate(bestFromPopulation));
 
-            success = evaluatePopulation(population) == 1;
+                //Use mean
+//            success = evaluatePopulation(population) == 1;
 
-            generations++;
-            System.out.println("Total fitness = " + evaluatePopulation(population));
+                //Use best
+                success = bestFromPopulation.getFitness() == 32;
+                generations++;
+//                System.out.println("Total fitness = " + evaluatePopulation(population));
+                System.out.println("Best = " + bestFromPopulation.getFitness());
+
 
             //Create CSV of mean and best fitness.
-            ArrayList<String> auditValues = new ArrayList<String>();
-            auditValues.add((String.valueOf((evaluatePopulation(population)))));
-            auditValues.add(String.valueOf(bestFromPopulation.getFitness()));
-            auditValues.add(String.valueOf(generations));
-            audit.add(auditValues);
+                ArrayList<String> auditValues = new ArrayList<String>();
+                auditValues.add((String.valueOf((evaluatePopulation(population)))));
+                auditValues.add(String.valueOf(bestFromPopulation.getFitness()));
+                auditValues.add(String.valueOf(generations));
+                audit.add(auditValues);
+
         }
 
         System.out.println("End of loop at : " + (float)evaluatePopulation(population) + " out of possible " + totalPossibleFitness);
         System.out.println("best individual has fitness of " + population.getBestCandidate().getFitness());
+        System.out.println("Generations " + generations);
 
         String csv = "/home/shaun/Desktop/ga.csv";
         CsvFileWriter.writeCsvFile(csv, audit);
@@ -159,6 +167,7 @@ public class EvolutionaryAlgorithm {
                     if (array1[i] != 2 || array2[i] != 2) {
                         if (array2[i] != array1[i]) {
                             b = false;
+                            break;
                         }
                     }
                 }
