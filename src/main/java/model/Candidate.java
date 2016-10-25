@@ -20,8 +20,16 @@ public class Candidate {
         if(autoInitialise){
             for (int i = 0; i < encodingLength; i++) {
                 Random random = new Random();
-                int value = random.nextInt(2);
-                encoding[i] = value;
+                int value = random.nextInt(3);
+                if(value == 2){
+                    if(!((i + 1) % 6 == 0)){
+                        encoding[i] = value;
+                    }else{
+                        encoding[i] = random.nextInt(2);
+                    }
+                }else{
+                    encoding[i] = value;
+                }
             }
             extractRules();
         }
@@ -50,10 +58,6 @@ public class Candidate {
             int actual = encoding[i+5];
             Rule rule = new Rule(conditions,actual);
             rules.add(rule);
-        }
-        boolean ruleSizeCorrect = rules.size() == 10;
-        if(!ruleSizeCorrect){
-            System.out.println("Rules size not 10");
         }
     }
 

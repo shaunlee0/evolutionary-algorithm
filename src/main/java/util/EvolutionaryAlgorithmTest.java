@@ -5,9 +5,6 @@ import model.Candidate;
 import model.Population;
 import org.junit.Test;
 
-/**
- * Created by shaun on 12/10/2016.
- */
 public class EvolutionaryAlgorithmTest {
 
     @Test

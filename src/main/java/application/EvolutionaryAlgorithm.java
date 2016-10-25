@@ -8,7 +8,9 @@ import service.TextFileService;
 import util.CsvFileWriter;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 public class EvolutionaryAlgorithm {
 
@@ -17,7 +19,7 @@ public class EvolutionaryAlgorithm {
 
     //GA Constants.
     private static final int populationSize = 50;
-    private static final int encodingLength = 60;
+    private static final int encodingLength = 192;
     private static final double mutationProbability = 0.001;
     private static final double crossoverProbability = 1.0;
     private static TextFileService textFileService = new TextFileService();
@@ -25,15 +27,14 @@ public class EvolutionaryAlgorithm {
 
 
     public static void main(String[] args) {
-        int totalOnesPossible = populationSize * encodingLength;
+        int totalPossibleFitness = data.size();
         Population population = new Population(populationSize, encodingLength);
         population.initialise();
-        evaluatePopulation(population);
+        System.out.println("initial fitness = " + evaluatePopulation(population));
 
         ArrayList<ArrayList<String>> audit = new ArrayList<ArrayList<String>>();
 
-        float k = (((float) evaluatePopulation(population)) / ((float) totalOnesPossible)) * 100f;
-        boolean success = k == 100;
+        boolean success = evaluatePopulation(population) == 1;
 
 
         while (generations < 50 && !success) {
@@ -41,12 +42,8 @@ public class EvolutionaryAlgorithm {
             Candidate bestFromPopulation = population.getBestCandidate();
 
             Population offspring = performSelection(population);
-            System.out.println("Selection performed");
             offspring = crossOverOffspring(offspring);
-//            System.out.println("Crossover performed");
-//            offspring = mutatePopulation(offspring);
-//            System.out.println("Mutation performed");
-
+            offspring = mutatePopulation(offspring);
 
             population.clear();
             population.fill(offspring.getPopulation());
@@ -55,29 +52,24 @@ public class EvolutionaryAlgorithm {
             population.getPopulation().remove(population.getWorstFromPopulation());
             population.getPopulation().add(new Candidate(bestFromPopulation));
 
-//            k = (((float) evaluatePopulation(population)) / ((float) totalOnesPossible)) * 100f;
-//            success = k == 100;
-//            if (success) {
-//                System.out.println("here");
-//            }
-            generations++;
+            success = evaluatePopulation(population) == 1;
 
+            generations++;
             System.out.println("Total fitness = " + evaluatePopulation(population));
 
-
-//            //Create CSV of mean and best fitness.
-//            ArrayList<String> auditValues = new ArrayList<String>();
-//            auditValues.add((String.valueOf((evaluatePopulationGetMean(population)))));
-//            auditValues.add(String.valueOf(bestFromPopulation.getFitness()));
-//            auditValues.add(String.valueOf(generations));
-//            audit.add(auditValues);
-
+            //Create CSV of mean and best fitness.
+            ArrayList<String> auditValues = new ArrayList<String>();
+            auditValues.add((String.valueOf((evaluatePopulation(population)))));
+            auditValues.add(String.valueOf(bestFromPopulation.getFitness()));
+            auditValues.add(String.valueOf(generations));
+            audit.add(auditValues);
         }
 
-        System.out.println("End of loop at : " + population.getBestCandidate().getFitness() + " out of possible " + totalOnesPossible / populationSize);
+        System.out.println("End of loop at : " + (float)evaluatePopulation(population) + " out of possible " + totalPossibleFitness);
+        System.out.println("best individual has fitness of " + population.getBestCandidate().getFitness());
 
         String csv = "/home/shaun/Desktop/ga.csv";
-        CsvFileWriter.writeCsvFile(csv,audit);
+        CsvFileWriter.writeCsvFile(csv, audit);
     }
 
     private static Population performSelection(Population population) {
@@ -96,14 +88,16 @@ public class EvolutionaryAlgorithm {
     }
 
     public static Population mutatePopulation(Population offspring) {
-        int mutatedCount = 0;
         for (Candidate candidate : offspring.getPopulation()) {
             for (int i = 0; i < candidate.encoding.length; i++) {
                 float rand = random.nextFloat();
                 boolean mutateThisGene = rand <= mutationProbability;
                 if (mutateThisGene) {
-                    mutatedCount ++;
-                    candidate.encoding[i] = 1 - candidate.encoding[i];
+                    if ((i + 1) % 6 == 0) {
+                        candidate.encoding[i] = random.nextInt(2);
+                    }else{
+                        candidate.encoding[i] = random.nextInt(3);
+                    }
                 }
             }
         }
@@ -127,56 +121,53 @@ public class EvolutionaryAlgorithm {
         candidate.extractRules();
         ArrayList<Rule> candidateRules = candidate.getRules();
 
-        if(candidateRules==null){
+        if (candidateRules == null) {
             System.out.println("Rules are null");
         }
 
-        for (Rule rule : candidate.getRules()){
-            if(compareRuleToData(rule)){
-            //If this rule and output match those in data set file, increment fitness by one.
-                fitness ++;
+        for (Data dataElement : data) {
+            for (Rule rule : candidate.getRules()) {
+                if (compareArrays(rule.getConditions(), dataElement.getConditions())) {
+                    if (rule.getActual() == dataElement.getOutput()) {
+                        fitness++;
+                        break;
+                    } else {
+                        break;
+                    }
+                }
             }
         }
 
-        if(fitness >= 10){
-            System.out.println("found the best one!");
-        }
         candidate.setFitness(fitness);
         return fitness;
     }
 
-    private static boolean compareRuleToData(Rule rule) {
-        boolean result = false;
-        for (Data dataElement : data){
-            boolean sameConditions = compareArrays(rule.getConditions(),dataElement.getConditions());
-            boolean sameOutput = rule.getActual() == dataElement.getOutput();
-            result = sameConditions && sameOutput;
-            if (result){
-                return result;
-            }
-        }
-        return result;
-    }
 
-
-
-    public static boolean compareArrays(int[] array1, int[] array2) {
+    /**
+     * Compares two arrays and checks the elements match, if a wildcard is found we simply count it as a match.
+     *
+     * @return : Boolean result of check
+     */
+    private static boolean compareArrays(int[] array1, int[] array2) {
         boolean b = true;
-        if (array1 != null && array2 != null){
-            if (array1.length != array2.length)
+        if (array1 != null && array2 != null) {
+            //check length matches
+            if (array1.length != array2.length) {
                 b = false;
-            else
+            } else {
                 for (int i = 0; i < array2.length; i++) {
-                    if (array2[i] != array1[i]) {
-                        b = false;
+                    if (array1[i] != 2 || array2[i] != 2) {
+                        if (array2[i] != array1[i]) {
+                            b = false;
+                        }
                     }
                 }
-        }else{
+            }
+        } else {
             b = false;
         }
         return b;
     }
-
 
 
     public static Population crossOverOffspring(Population offspring) {
@@ -185,7 +176,7 @@ public class EvolutionaryAlgorithm {
             float rand = random.nextFloat();
             boolean crossoverParents = rand <= crossoverProbability;
 
-            if (crossoverParents){
+            if (crossoverParents) {
                 int crossoverPoint = random.nextInt(encodingLength);
                 int[] firstParentTemp = new int[encodingLength];
                 int[] secondParentTemp = new int[encodingLength];
@@ -236,13 +227,17 @@ public class EvolutionaryAlgorithm {
         return candidate;
     }
 
-    private static int evaluatePopulation(Population population) {
+    private static float evaluatePopulation(Population population) {
         int populationFitness = 0;
+
+//        Incorrect mapping rules against data rather than the opposite
         for (int i = 0; i < population.getPopulation().size(); i++) {
             populationFitness += evaluateCandidate(population.getPopulation().get(i));
         }
-        return populationFitness;
+
+        return (float)populationFitness / (float)populationSize;
     }
+
 
     private static int evaluatePopulationGetMean(Population population) {
         int populationFitness = 0;
