@@ -15,7 +15,7 @@ public class EvolutionaryAlgorithm {
     private static final Random random = new Random();
 
     //GA Constants.
-    private static final int populationSize = 30;
+    private static final int populationSize = 100;
     private static final int encodingLength = 70;
     private static final double mutationProbability = 0.002;
     private static final double crossoverProbability = 0.8;
@@ -35,7 +35,7 @@ public class EvolutionaryAlgorithm {
         boolean success = evaluatePopulation(population) == 1;
 
 
-        while (generations < 500 && !success) {
+        while (generations < 1000 && !success) {
 
                 Population offspring = performSelection(population);
                 offspring = crossOverOffspring(offspring);
