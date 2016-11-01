@@ -21,7 +21,7 @@ public class Candidate {
             for (int i = 0; i < encodingLength; i++) {
                 Random random = new Random();
                 int value = 0;
-                if((i + 1) % 6 == 0){
+                if((i + 1) % 7 == 0){
                     value = random.nextInt(2);
                     encoding[i] = value;
                 }else{
@@ -61,9 +61,9 @@ public class Candidate {
             this.rules.clear();
         }
         int count = 0;
-        for (int i = 0; i < encoding.length - 5; i+=6) {
-            int[] conditions = Arrays.copyOfRange(encoding,i,i+5);
-            int actual = encoding[i+5];
+        for (int i = 0; i < encoding.length - 6; i+=7) {
+            int[] conditions = Arrays.copyOfRange(encoding,i,i+6);
+            int actual = encoding[i+6];
             if(actual == 2){
                 System.out.println(actual);
             }

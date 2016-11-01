@@ -7,10 +7,7 @@ import model.Rule;
 import service.TextFileService;
 import util.CsvFileWriter;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 public class EvolutionaryAlgorithm {
 
@@ -18,12 +15,12 @@ public class EvolutionaryAlgorithm {
     private static final Random random = new Random();
 
     //GA Constants.
-    private static final int populationSize = 50;
-    private static final int encodingLength = 192;
-    private static final double mutationProbability = 0.02;
-    private static final double crossoverProbability = 0.9;
+    private static final int populationSize = 30;
+    private static final int encodingLength = 70;
+    private static final double mutationProbability = 0.002;
+    private static final double crossoverProbability = 0.8;
     private static TextFileService textFileService = new TextFileService();
-    private static ArrayList<Data> data = textFileService.getDataFromTextFile("data1.txt");
+    private static ArrayList<Data> data = textFileService.getDataFromTextFile("data2.txt");
 
 
     public static void main(String[] args) {
@@ -38,12 +35,7 @@ public class EvolutionaryAlgorithm {
         boolean success = evaluatePopulation(population) == 1;
 
 
-        while (generations < 50 && !success) {
-
-            if(generations > 0){
-                    population.getPopulation().remove(population.getWorstFromPopulation());
-                    population.getPopulation().add(new Candidate(bestCandidate));
-            }
+        while (generations < 500 && !success) {
 
                 Population offspring = performSelection(population);
                 offspring = crossOverOffspring(offspring);
@@ -51,14 +43,24 @@ public class EvolutionaryAlgorithm {
                 population.clear();
                 population.fill(offspring.getPopulation());
                 offspring.clear();
-                bestCandidate = population.getBestCandidate();
+
 
             //Use mean
 //            success = evaluatePopulation(population) == 1;
 
                 //Use best
-                success = bestCandidate.getFitness() == 32;
+                success = bestCandidate.getFitness() == 64;
                 generations++;
+
+                if(bestCandidate.getFitness() < population.getBestCandidate().getFitness()){
+                    bestCandidate = population.getBestCandidate();
+                }
+
+                if(generations > 0){
+                        population.getPopulation().remove(population.getWorstFromPopulation());
+                        population.getPopulation().add(new Candidate(bestCandidate));
+                }
+
                 System.out.println("Total fitness = " + evaluatePopulation(population));
                 System.out.println("Best = " + bestCandidate.getFitness());
 
@@ -73,8 +75,13 @@ public class EvolutionaryAlgorithm {
         }
 
         System.out.println("End of loop at : " + (float)evaluatePopulation(population) + " out of possible " + totalPossibleFitness);
-        System.out.println("best individual has fitness of " + population.getBestCandidate().getFitness());
+        bestCandidate.extractRules();
+        System.out.println("best individual has fitness of " + bestCandidate.getFitness());
         System.out.println("Generations " + generations);
+        Set<Rule> bestRules = new HashSet<>(bestCandidate.rules);
+        bestRules.forEach(rule->{
+            System.out.println("conditions : " + Arrays.toString(rule.getConditions()) + ", actual : " + rule.getActual());
+        });
 
         String csv = "/home/shaun/Desktop/ga.csv";
         CsvFileWriter.writeCsvFile(csv, audit);
@@ -102,7 +109,7 @@ public class EvolutionaryAlgorithm {
                 boolean mutateThisGene = rand <= mutationProbability;
                 if (mutateThisGene) {
                     //If output
-                    if ((i + 1) % 6 == 0) {
+                    if ((i + 1) % 7 == 0) {
 
                         if(candidate.encoding[i]==1){
                             candidate.encoding[i] = 0;
