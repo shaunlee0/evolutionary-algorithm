@@ -18,16 +18,17 @@ public class EvolutionaryAlgorithm {
     private static final Random random = new Random();
 
     //GA Constants.
-    private static final int populationSize = 1000;
-    private static final int encodingLength = 192;
-    private static final double mutationProbability = 0.001;
-    private static final double crossoverProbability = 0.5;
+    private static final int populationSize = 50;
+    private static final int encodingLength = 60;
+    private static final double mutationProbability = 0.02;
+    private static final double crossoverProbability = 0.9;
     private static TextFileService textFileService = new TextFileService();
     private static ArrayList<Data> data = textFileService.getDataFromTextFile("data1.txt");
 
 
     public static void main(String[] args) {
         int totalPossibleFitness = data.size();
+        Candidate bestCandidate = new Candidate(encodingLength,false);
         Population population = new Population(populationSize, encodingLength);
         population.initialise();
         System.out.println("initial fitness = " + evaluatePopulation(population));
@@ -37,36 +38,42 @@ public class EvolutionaryAlgorithm {
         boolean success = evaluatePopulation(population) == 1;
 
 
-        while (generations < 200 && !success) {
-//        while (!success) {
+        while (generations < 50 && !success) {
 
-                Candidate bestFromPopulation = population.getBestCandidate();
+            if(generations > 0){
+                    population.getPopulation().remove(population.getWorstFromPopulation());
+                    population.getPopulation().add(new Candidate(bestCandidate));
+            }
 
                 Population offspring = performSelection(population);
                 offspring = crossOverOffspring(offspring);
                 offspring = mutatePopulation(offspring);
 
+
+
                 population.clear();
                 population.fill(offspring.getPopulation());
                 offspring.clear();
 
-                population.getPopulation().remove(population.getWorstFromPopulation());
-                population.getPopulation().add(new Candidate(bestFromPopulation));
+                bestCandidate = population.getBestCandidate();
 
-                //Use mean
+
+
+
+            //Use mean
 //            success = evaluatePopulation(population) == 1;
 
                 //Use best
-                success = bestFromPopulation.getFitness() == 32;
+                success = bestCandidate.getFitness() == 32;
                 generations++;
 //                System.out.println("Total fitness = " + evaluatePopulation(population));
-                System.out.println("Best = " + bestFromPopulation.getFitness());
+                System.out.println("Best = " + bestCandidate.getFitness());
 
 
             //Create CSV of mean and best fitness.
                 ArrayList<String> auditValues = new ArrayList<String>();
                 auditValues.add((String.valueOf((evaluatePopulation(population)))));
-                auditValues.add(String.valueOf(bestFromPopulation.getFitness()));
+                auditValues.add(String.valueOf(bestCandidate.getFitness()));
                 auditValues.add(String.valueOf(generations));
                 audit.add(auditValues);
 
@@ -101,11 +108,17 @@ public class EvolutionaryAlgorithm {
                 float rand = random.nextFloat();
                 boolean mutateThisGene = rand <= mutationProbability;
                 if (mutateThisGene) {
-                    if ((i + 1) % 6 == 0) {
-                        candidate.encoding[i] = random.nextInt(2);
-                    }else{
-                        candidate.encoding[i] = random.nextInt(3);
+                    if(candidate.encoding[i]==1){
+                        candidate.encoding[i] = 0;
                     }
+                    if(candidate.encoding[i]==0){
+                        candidate.encoding[i] = 1;
+                    }
+//                    if ((i + 1) % 6 == 0) {
+//                        candidate.encoding[i] = random.nextInt(2);
+//                    }else{
+//                        candidate.encoding[i] = random.nextInt(3);
+//                    }
                 }
             }
         }
@@ -132,14 +145,13 @@ public class EvolutionaryAlgorithm {
         if (candidateRules == null) {
             System.out.println("Rules are null");
         }
-
+        //Loop through data
         for (Data dataElement : data) {
+            //Loop through candidates rules
             for (Rule rule : candidate.getRules()) {
                 if (compareArrays(rule.getConditions(), dataElement.getConditions())) {
                     if (rule.getActual() == dataElement.getOutput()) {
                         fitness++;
-                        break;
-                    } else {
                         break;
                     }
                 }
@@ -164,7 +176,7 @@ public class EvolutionaryAlgorithm {
                 b = false;
             } else {
                 for (int i = 0; i < array2.length; i++) {
-                    if (array1[i] != 2 || array2[i] != 2) {
+                    if (array1[i] != 2 && array2[i] != 2) {
                         if (array2[i] != array1[i]) {
                             b = false;
                             break;
@@ -177,7 +189,6 @@ public class EvolutionaryAlgorithm {
         }
         return b;
     }
-
 
     public static Population crossOverOffspring(Population offspring) {
         for (int i = 0; i < populationSize - 1; i++) {
@@ -214,6 +225,7 @@ public class EvolutionaryAlgorithm {
 //          Tournament selection
             int randomInt = random.nextInt(populationSize);
             toReturn[i] = population.getPopulation().get(randomInt);
+//            Roulette wheel selection
 //            toReturn[i] = selectIndividualUsingRouletteWheelSelection(population);
         }
         return toReturn;

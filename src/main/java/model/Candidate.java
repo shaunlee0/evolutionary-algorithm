@@ -20,16 +20,24 @@ public class Candidate {
         if(autoInitialise){
             for (int i = 0; i < encodingLength; i++) {
                 Random random = new Random();
-                int value = random.nextInt(3);
-                if(value == 2){
-                    if(!((i + 1) % 6 == 0)){
-                        encoding[i] = value;
-                    }else{
-                        encoding[i] = random.nextInt(2);
-                    }
+                int value = 0;
+                if((i + 1) % 6 == 0){
+                    value = random.nextInt(2);
+                    encoding[i] = value;
                 }else{
+                    value = random.nextInt(3);
                     encoding[i] = value;
                 }
+//                int value = random.nextInt(3);
+//                if(value == 3){
+//                    if(!((i + 1) % 6 == 0)){
+//                        encoding[i] = value;
+//                    }else{
+//                        encoding[i] = random.nextInt(2);
+//                    }
+//                }else{
+//                    encoding[i] = value;
+//                }
             }
             extractRules();
         }
@@ -56,6 +64,9 @@ public class Candidate {
         for (int i = 0; i < encoding.length - 5; i+=6) {
             int[] conditions = Arrays.copyOfRange(encoding,i,i+5);
             int actual = encoding[i+5];
+            if(actual == 2){
+                System.out.println(actual);
+            }
             Rule rule = new Rule(conditions,actual);
             rules.add(rule);
         }
