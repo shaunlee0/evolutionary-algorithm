@@ -19,7 +19,7 @@ public class EvolutionaryAlgorithm {
 
     //GA Constants.
     private static final int populationSize = 50;
-    private static final int encodingLength = 60;
+    private static final int encodingLength = 192;
     private static final double mutationProbability = 0.02;
     private static final double crossoverProbability = 0.9;
     private static TextFileService textFileService = new TextFileService();
@@ -48,17 +48,10 @@ public class EvolutionaryAlgorithm {
                 Population offspring = performSelection(population);
                 offspring = crossOverOffspring(offspring);
                 offspring = mutatePopulation(offspring);
-
-
-
                 population.clear();
                 population.fill(offspring.getPopulation());
                 offspring.clear();
-
                 bestCandidate = population.getBestCandidate();
-
-
-
 
             //Use mean
 //            success = evaluatePopulation(population) == 1;
@@ -66,7 +59,7 @@ public class EvolutionaryAlgorithm {
                 //Use best
                 success = bestCandidate.getFitness() == 32;
                 generations++;
-//                System.out.println("Total fitness = " + evaluatePopulation(population));
+                System.out.println("Total fitness = " + evaluatePopulation(population));
                 System.out.println("Best = " + bestCandidate.getFitness());
 
 
@@ -108,17 +101,27 @@ public class EvolutionaryAlgorithm {
                 float rand = random.nextFloat();
                 boolean mutateThisGene = rand <= mutationProbability;
                 if (mutateThisGene) {
-                    if(candidate.encoding[i]==1){
-                        candidate.encoding[i] = 0;
+                    //If output
+                    if ((i + 1) % 6 == 0) {
+
+                        if(candidate.encoding[i]==1){
+                            candidate.encoding[i] = 0;
+                        }
+                        if(candidate.encoding[i]==0){
+                            candidate.encoding[i] = 1;
+                        }
+                    }else{
+                        int value = candidate.encoding[i];
+
+                        int candidateValue = random.nextInt(3);
+
+                        while(candidateValue==value){
+                            candidateValue = random.nextInt(3);
+                        }
+
+                        candidate.encoding[i] = candidateValue;
+
                     }
-                    if(candidate.encoding[i]==0){
-                        candidate.encoding[i] = 1;
-                    }
-//                    if ((i + 1) % 6 == 0) {
-//                        candidate.encoding[i] = random.nextInt(2);
-//                    }else{
-//                        candidate.encoding[i] = random.nextInt(3);
-//                    }
                 }
             }
         }
@@ -152,6 +155,8 @@ public class EvolutionaryAlgorithm {
                 if (compareArrays(rule.getConditions(), dataElement.getConditions())) {
                     if (rule.getActual() == dataElement.getOutput()) {
                         fitness++;
+                        break;
+                    }else{
                         break;
                     }
                 }
