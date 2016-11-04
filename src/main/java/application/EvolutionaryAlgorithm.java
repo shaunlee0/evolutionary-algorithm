@@ -104,9 +104,8 @@ public class EvolutionaryAlgorithm {
                 if (compareArrays(rule.getConditions(), dataElement.getConditions())) {
                     if (rule.getActual() == dataElement.getOutput()) {
                         rule.setFitness(rule.getFitness() + 1);
-//                        break;
                     }else{
-//                        break;
+
                     }
                 }
             }
