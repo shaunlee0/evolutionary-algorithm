@@ -6,10 +6,12 @@ package model;
 public class Rule {
     int[] conditions;
     int actual;
+    int fitness;
 
     public Rule(int[] conditions, int actual){
         this.conditions = conditions;
         this.actual = actual;
+        this.fitness = 0;
     }
 
     public int[] getConditions() {
@@ -26,5 +28,13 @@ public class Rule {
 
     public void setActual(int actual) {
         this.actual = actual;
+    }
+
+    public int getFitness() {
+        return fitness;
+    }
+
+    public void setFitness(int fitness) {
+        this.fitness = fitness;
     }
 }
