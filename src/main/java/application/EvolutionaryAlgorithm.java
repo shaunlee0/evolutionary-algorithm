@@ -19,31 +19,32 @@ public class EvolutionaryAlgorithm {
 
     //GA Constants.
     private static final int populationSize = 50;
-    private static final int encodingLength = 192;
-    private static final double mutationProbability = 0.02;
+    private static final int encodingLength = 60;
+    private static final double mutationProbability = 0.65;
     private static final double crossoverProbability = 0.9;
     private static TextFileService textFileService = new TextFileService();
     private static ArrayList<Data> data = textFileService.getDataFromTextFile("data1.txt");
 
 
     public static void main(String[] args) {
-        int totalPossibleFitness = data.size();
-        Candidate bestCandidate = new Candidate(encodingLength,false);
-        Population population = new Population(populationSize, encodingLength);
-        population.initialise();
-        System.out.println("initial fitness = " + evaluatePopulation(population));
 
         ArrayList<ArrayList<String>> audit = new ArrayList<>();
 
-        boolean success = evaluatePopulation(population) == 1;
+        for (int i = 0; i < 20; i++) {
+
+            generations = 0;
+
+            int totalPossibleFitness = data.size();
+            Candidate bestCandidate = new Candidate(encodingLength, false);
+            Population population = new Population(populationSize, encodingLength);
+            population.initialise();
+            System.out.println("initial fitness = " + evaluatePopulation(population));
 
 
-        while (generations < 50 && !success) {
+            boolean success = evaluatePopulation(population) == 1;
 
-            if(generations > 0){
-                    population.getPopulation().remove(population.getWorstFromPopulation());
-                    population.getPopulation().add(new Candidate(bestCandidate));
-            }
+
+            while (!success && generations < 2000) {
 
                 Population offspring = performSelection(population);
                 offspring = crossOverOffspring(offspring);
@@ -51,30 +52,41 @@ public class EvolutionaryAlgorithm {
                 population.clear();
                 population.fill(offspring.getPopulation());
                 offspring.clear();
-                bestCandidate = population.getBestCandidate();
-
-            //Use mean
-//            success = evaluatePopulation(population) == 1;
 
                 //Use best
                 success = bestCandidate.getFitness() == 32;
                 generations++;
+
+                if (bestCandidate.getFitness() < population.getBestCandidate().getFitness()) {
+                    bestCandidate = population.getBestCandidate();
+                }
+
+                if (generations > 0) {
+                    population.getPopulation().remove(population.getWorstFromPopulation());
+                    population.getPopulation().add(new Candidate(bestCandidate));
+                }
+
                 System.out.println("Total fitness = " + evaluatePopulation(population));
                 System.out.println("Best = " + bestCandidate.getFitness());
 
 
+
+
+            }
+
+
+            System.out.println("End of loop at : " + (float)evaluatePopulation(population) + " out of possible " + totalPossibleFitness);
+            System.out.println("best individual has fitness of " + bestCandidate.getFitness());
+            System.out.println("Generations " + generations);
+
             //Create CSV of mean and best fitness.
-                ArrayList<String> auditValues = new ArrayList<String>();
-                auditValues.add((String.valueOf((evaluatePopulation(population)))));
-                auditValues.add(String.valueOf(bestCandidate.getFitness()));
-                auditValues.add(String.valueOf(generations));
-                audit.add(auditValues);
+            ArrayList<String> auditValues = new ArrayList<String>();
+            auditValues.add((String.valueOf((evaluatePopulation(population)))));
+            auditValues.add(String.valueOf(bestCandidate.getFitness()));
+            auditValues.add(String.valueOf(i));
 
+            audit.add(auditValues);
         }
-
-        System.out.println("End of loop at : " + (float)evaluatePopulation(population) + " out of possible " + totalPossibleFitness);
-        System.out.println("best individual has fitness of " + population.getBestCandidate().getFitness());
-        System.out.println("Generations " + generations);
 
         String csv = "/home/shaun/Desktop/ga.csv";
         CsvFileWriter.writeCsvFile(csv, audit);
