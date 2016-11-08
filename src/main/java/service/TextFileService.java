@@ -17,35 +17,6 @@ import java.util.stream.Stream;
  */
 public class TextFileService {
 
-    private static final String FILE_ONE = "one.txt";
-    private static final String FILE_TWO = "two.txt";
-
-    public void writeMatchingRuleWithOutput(int oneOrTwoOutput,String data) throws IOException {
-        File file = null;
-        if(oneOrTwoOutput == 1){
-            file = new File(FILE_ONE);
-        }
-        if(oneOrTwoOutput == 2){
-            file = new File(FILE_TWO);
-        }
-
-        if(!file.exists()){
-            try {
-                file.createNewFile();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        //true = append file
-        FileWriter fileWritter = null;
-        fileWritter = new FileWriter(file.getName(),true);
-        BufferedWriter bufferWritter = new BufferedWriter(fileWritter);
-        bufferWritter.write(data);
-        bufferWritter.close();
-
-    }
-
 
     public ArrayList<Data> getDataFromTextFile(String fileName) {
 

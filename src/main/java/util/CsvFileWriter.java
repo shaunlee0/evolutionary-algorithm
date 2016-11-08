@@ -14,7 +14,7 @@ public class CsvFileWriter {
         //Delimiter used in CSV file
     private static final String COMMA_DELIMITER = ",";
     private static final String NEW_LINE_SEPARATOR = "\n";
-    private static final String FILE_HEADER = "mean fitness,best fitness,generations";
+    private static final String FILE_HEADER = "mean fitness,best fitness,run";
 
     public static void writeCsvFile(String fileName, ArrayList<ArrayList<String>> csvFiles) {
 

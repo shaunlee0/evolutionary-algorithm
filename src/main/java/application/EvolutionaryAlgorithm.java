@@ -25,18 +25,24 @@ public class EvolutionaryAlgorithm {
 
 
     public static void main(String[] args) {
-        int totalPossibleFitness = data.size();
-        Candidate bestCandidate = new Candidate(encodingLength,false);
-        Population population = new Population(populationSize, encodingLength);
-        population.initialise();
-        System.out.println("initial fitness = " + evaluatePopulation(population));
-
         ArrayList<ArrayList<String>> audit = new ArrayList<>();
 
-        boolean success = evaluatePopulation(population) == 1;
+        for (int i = 0; i < 10; i++) {
+
+            generations = 0;
+
+            int totalPossibleFitness = data.size();
+            Candidate bestCandidate = new Candidate(encodingLength, false);
+            Population population = new Population(populationSize, encodingLength);
+            population.initialise();
+            System.out.println("initial fitness = " + evaluatePopulation(population));
+            ArrayList<String> auditValues = new ArrayList<>();
 
 
-        while (!success) {
+            boolean success = evaluatePopulation(population) == 1;
+
+
+            while (!success && generations < 2000) {
 
                 Population offspring = performSelection(population);
                 offspring = crossOverOffspring(offspring);
@@ -45,54 +51,53 @@ public class EvolutionaryAlgorithm {
                 population.fill(offspring.getPopulation());
                 offspring.clear();
 
-                //Use mean
-//              success = evaluatePopulation(population) == 1;
-
                 //Use best
                 success = bestCandidate.getFitness() == 64;
                 generations++;
 
-                if(bestCandidate.getFitness() < population.getBestCandidate().getFitness()){
+                if (bestCandidate.getFitness() < population.getBestCandidate().getFitness()) {
                     bestCandidate = population.getBestCandidate();
                 }
 
-                if(generations > 0){
-                        population.getPopulation().remove(population.getWorstFromPopulation());
-                        population.getPopulation().add(new Candidate(bestCandidate));
+                if (generations > 0) {
+                    population.getPopulation().remove(population.getWorstFromPopulation());
+                    population.getPopulation().add(new Candidate(bestCandidate));
                 }
 
                 System.out.println("Total fitness = " + evaluatePopulation(population));
                 System.out.println("Best = " + bestCandidate.getFitness());
 
-                //Create CSV of mean and best fitness.
-                ArrayList<String> auditValues = new ArrayList<>();
-                auditValues.add((String.valueOf((evaluatePopulation(population)))));
-                auditValues.add(String.valueOf(bestCandidate.getFitness()));
-                auditValues.add(String.valueOf(generations));
-                audit.add(auditValues);
+            }
+
+            auditValues.add((String.valueOf((evaluatePopulation(population)))));
+            auditValues.add(String.valueOf(bestCandidate.getFitness()));
+            auditValues.add(String.valueOf(i));
+
+
+            audit.add(auditValues);
+
+            System.out.println("End of loop at : " + (float) evaluatePopulation(population) + " out of possible " + totalPossibleFitness);
+            bestCandidate.extractRules();
+            System.out.println("best individual has fitness of " + bestCandidate.getFitness());
+            System.out.println("Generations " + generations);
+            findRuleFitness(bestCandidate.getRules());
+            Set<Rule> bestRules = new HashSet<>(bestCandidate.rules);
+            Set<Rule> outputOfOne = bestRules.stream().filter(rule -> rule.getActual() == 1).collect(Collectors.toSet());
+            Set<Rule> outputOfZero = bestRules.stream().filter(rule -> rule.getActual() == 0).collect(Collectors.toSet());
+
+            System.out.println("\nOutput of One");
+            outputOfOne.forEach(rule -> {
+                System.out.println("conditions : " + Arrays.toString(rule.getConditions()) + ", actual : " + rule.getActual() + ", fitness = " + rule.getFitness());
+            });
+
+            System.out.println("\nOutput of Zero");
+            outputOfZero.forEach(rule -> {
+                System.out.println("conditions : " + Arrays.toString(rule.getConditions()) + ", actual : " + rule.getActual() + ", fitness = " + rule.getFitness());
+            });
+
         }
-
-        System.out.println("End of loop at : " + (float)evaluatePopulation(population) + " out of possible " + totalPossibleFitness);
-        bestCandidate.extractRules();
-        System.out.println("best individual has fitness of " + bestCandidate.getFitness());
-        System.out.println("Generations " + generations);
-        findRuleFitness(bestCandidate.getRules());
-        Set<Rule> bestRules = new HashSet<>(bestCandidate.rules);
-        Set<Rule> outputOfOne = bestRules.stream().filter(rule -> rule.getActual() == 1).collect(Collectors.toSet());
-        Set<Rule> outputOfZero = bestRules.stream().filter(rule -> rule.getActual() == 0).collect(Collectors.toSet());
-
-        System.out.println("\nOutput of One");
-        outputOfOne.forEach(rule->{
-            System.out.println("conditions : " + Arrays.toString(rule.getConditions()) + ", actual : " + rule.getActual() + ", fitness = " + rule.getFitness());
-        });
-
-        System.out.println("\nOutput of Zero");
-        outputOfZero.forEach(rule->{
-            System.out.println("conditions : " + Arrays.toString(rule.getConditions()) + ", actual : " + rule.getActual()+ ", fitness = " + rule.getFitness());
-        });
-
-        String csv = "/home/shaun/Desktop/ga.csv";
-        CsvFileWriter.writeCsvFile(csv, audit);
+            String csv = "/home/shaun/Desktop/ga.csv";
+            CsvFileWriter.writeCsvFile(csv, audit);
     }
 
     private static void findRuleFitness(ArrayList<Rule> rules) {
@@ -104,7 +109,7 @@ public class EvolutionaryAlgorithm {
                 if (compareArrays(rule.getConditions(), dataElement.getConditions())) {
                     if (rule.getActual() == dataElement.getOutput()) {
                         rule.setFitness(rule.getFitness() + 1);
-                    }else{
+                    } else {
 
                     }
                 }
@@ -137,18 +142,18 @@ public class EvolutionaryAlgorithm {
                     //If output
                     if ((i + 1) % 7 == 0) {
 
-                        if(candidate.encoding[i]==1){
+                        if (candidate.encoding[i] == 1) {
                             candidate.encoding[i] = 0;
                         }
-                        if(candidate.encoding[i]==0){
+                        if (candidate.encoding[i] == 0) {
                             candidate.encoding[i] = 1;
                         }
-                    }else{
+                    } else {
                         int value = candidate.encoding[i];
 
                         int candidateValue = random.nextInt(3);
 
-                        while(candidateValue==value){
+                        while (candidateValue == value) {
                             candidateValue = random.nextInt(3);
                         }
 
@@ -190,7 +195,7 @@ public class EvolutionaryAlgorithm {
                         fitness++;
                         rule.setFitness(rule.getFitness() + 1);
                         break;
-                    }else{
+                    } else {
                         break;
                     }
                 }
@@ -295,7 +300,7 @@ public class EvolutionaryAlgorithm {
             populationFitness += evaluateCandidate(population.getPopulation().get(i));
         }
 
-        return (float)populationFitness / (float)populationSize;
+        return (float) populationFitness / (float) populationSize;
     }
 
 
