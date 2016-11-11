@@ -4,25 +4,25 @@ package model;
  * Created by shaun on 18/10/16.
  */
 public class Rule {
-    int[] conditions;
-    int actual;
+    Range[] conditions;
+    double actual;
     int fitness;
 
-    public Rule(int[] conditions, int actual){
+    public Rule(Range[] conditions, double actual){
         this.conditions = conditions;
         this.actual = actual;
         this.fitness = 0;
     }
 
-    public int[] getConditions() {
+    public Range[] getConditions() {
         return conditions;
     }
 
-    public void setConditions(int[] conditions) {
+    public void setConditions(Range[] conditions) {
         this.conditions = conditions;
     }
 
-    public int getActual() {
+    public double getActual() {
         return actual;
     }
 

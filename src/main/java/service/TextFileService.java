@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 import java.util.stream.Stream;
 
@@ -32,9 +33,9 @@ public class TextFileService {
             scanner.nextLine();
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
-                String[] splitLine = line.split(" ");
-                int[] rules = convertStringToIntArray(splitLine[0]);
-                int actual = Integer.parseInt(splitLine[1]);
+                String[] rulesAndOutput = line.split(" ");
+                double[] rules = convertStringToDoubleArray(Arrays.copyOfRange(rulesAndOutput,0,rulesAndOutput.length - 1));
+                double actual = Integer.parseInt(rulesAndOutput[rulesAndOutput.length - 1]);
                 Data data = new Data(rules,actual);
                 inputData.add(data);
             }
@@ -46,11 +47,11 @@ public class TextFileService {
         return inputData;
     }
 
-    private int[] convertStringToIntArray(String s) {
-        int[] results = new int[s.length()];
+    private double[] convertStringToDoubleArray(String[] strings) {
+        double[] results = new double[strings.length];
 
-        for (int i = 0; i < s.length(); i++) {
-            results[i] = Integer.parseInt(String.valueOf(s.charAt(i)));
+        for (int i = 0; i < strings.length; i++) {
+            results[i] = Double.parseDouble(strings[i]);
         }
 
         return results;

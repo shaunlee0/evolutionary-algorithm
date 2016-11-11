@@ -1,9 +1,6 @@
 package application;
 
-import model.Candidate;
-import model.Data;
-import model.Population;
-import model.Rule;
+import model.*;
 import service.TextFileService;
 import util.CsvFileWriter;
 
@@ -16,18 +13,18 @@ public class EvolutionaryAlgorithm {
     private static final Random random = new Random();
 
     //GA Constants.
-    private static final int populationSize = 100;
-    private static final int encodingLength = 35;
-    private static final double mutationProbability = 0.0065;
-    private static final double crossoverProbability = 0.2;
+    private static final int populationSize = 1000;
+    private static final int encodingLength = 39;
+    private static final double mutationProbability = 0.0075;
+    private static final double crossoverProbability = 0.4;
     private static TextFileService textFileService = new TextFileService();
-    private static ArrayList<Data> data = textFileService.getDataFromTextFile("data2.txt");
+    private static ArrayList<Data> data = textFileService.getDataFromTextFile("data3.txt");
 
 
     public static void main(String[] args) {
         ArrayList<ArrayList<String>> audit = new ArrayList<>();
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 5; i++) {
 
             generations = 0;
 
@@ -42,7 +39,7 @@ public class EvolutionaryAlgorithm {
             boolean success = evaluatePopulation(population) == 1;
 
 
-            while (!success && generations < 2000) {
+            while (!success && generations < 1000) {
 
                 Population offspring = performSelection(population);
                 offspring = crossOverOffspring(offspring);
@@ -71,7 +68,7 @@ public class EvolutionaryAlgorithm {
 
             auditValues.add((String.valueOf((evaluatePopulation(population)))));
             auditValues.add(String.valueOf(bestCandidate.getFitness()));
-            auditValues.add(String.valueOf(i));
+            auditValues.add(String.valueOf(generations));
 
 
             audit.add(auditValues);
@@ -140,25 +137,11 @@ public class EvolutionaryAlgorithm {
                 boolean mutateThisGene = rand <= mutationProbability;
                 if (mutateThisGene) {
                     //If output
-                    if ((i + 1) % 7 == 0) {
+                    if ((i + 1) % 13 == 0) {
 
-                        if (candidate.encoding[i] == 1) {
-                            candidate.encoding[i] = 0;
-                        }
-                        if (candidate.encoding[i] == 0) {
-                            candidate.encoding[i] = 1;
-                        }
+
                     } else {
-                        int value = candidate.encoding[i];
-
-                        int candidateValue = random.nextInt(3);
-
-                        while (candidateValue == value) {
-                            candidateValue = random.nextInt(3);
-                        }
-
-                        candidate.encoding[i] = candidateValue;
-
+                       //Else mutate that
                     }
                 }
             }
@@ -193,7 +176,7 @@ public class EvolutionaryAlgorithm {
                 if (compareArrays(rule.getConditions(), dataElement.getConditions())) {
                     if (rule.getActual() == dataElement.getOutput()) {
                         fitness++;
-                        rule.setFitness(rule.getFitness() + 1);
+//                        rule.setFitness(rule.getFitness() + 1);
                         break;
                     } else {
                         break;
@@ -212,7 +195,7 @@ public class EvolutionaryAlgorithm {
      *
      * @return : Boolean result of check
      */
-    private static boolean compareArrays(int[] array1, int[] array2) {
+    private static boolean compareArrays(Range[] array1, double[] array2) {
         boolean b = true;
         if (array1 != null && array2 != null) {
             //check length matches
@@ -220,12 +203,9 @@ public class EvolutionaryAlgorithm {
                 b = false;
             } else {
                 for (int i = 0; i < array2.length; i++) {
-                    if (array1[i] != 2 && array2[i] != 2) {
-                        if (array2[i] != array1[i]) {
-                            b = false;
-                            break;
-                        }
-                    }
+
+                    //check each falls in range method
+
                 }
             }
         } else {
