@@ -13,13 +13,13 @@ public class EvolutionaryAlgorithm {
     private static final Random random = new Random();
 
     //GA Constants.
-    private static final int populationSize = 1000;
-    private static final int encodingLength = 520;
-    private static final double mutationProbability = 0.0075;
+    private static final int populationSize = 500;
+    private static final int encodingLength = 260;
+    private static final double mutationProbability = 0.175;
     private static final double crossoverProbability = 0.5;
     private static TextFileService textFileService = new TextFileService();
     private static ArrayList<Data> data = textFileService.getDataFromTextFile("data3.txt");
-    private static double mutationBound = 0.015;
+    private static double mutationBound = 0.05;
 
 
     public static void main(String[] args) {
