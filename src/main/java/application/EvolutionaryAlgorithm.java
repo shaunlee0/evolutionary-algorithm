@@ -222,8 +222,8 @@ public class EvolutionaryAlgorithm {
 
             if (crossoverParents) {
                 int crossoverPoint = random.nextInt(encodingLength);
-                int[] firstParentTemp = new int[encodingLength];
-                int[] secondParentTemp = new int[encodingLength];
+                double[] firstParentTemp = new double[encodingLength];
+                double[] secondParentTemp = new double[encodingLength];
 
                 System.arraycopy(offspring.getPopulation().get(i).encoding, 0, firstParentTemp, 0, encodingLength);
                 System.arraycopy(offspring.getPopulation().get(i + 1).encoding, 0, secondParentTemp, 0, encodingLength);
