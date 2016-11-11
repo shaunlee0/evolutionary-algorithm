@@ -14,17 +14,18 @@ public class EvolutionaryAlgorithm {
 
     //GA Constants.
     private static final int populationSize = 1000;
-    private static final int encodingLength = 39;
+    private static final int encodingLength = 520;
     private static final double mutationProbability = 0.0075;
-    private static final double crossoverProbability = 0.4;
+    private static final double crossoverProbability = 0.5;
     private static TextFileService textFileService = new TextFileService();
     private static ArrayList<Data> data = textFileService.getDataFromTextFile("data3.txt");
+    private static double mutationBound = 0.015;
 
 
     public static void main(String[] args) {
         ArrayList<ArrayList<String>> audit = new ArrayList<>();
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 1; i++) {
 
             generations = 0;
 
@@ -39,7 +40,7 @@ public class EvolutionaryAlgorithm {
             boolean success = evaluatePopulation(population) == 1;
 
 
-            while (!success && generations < 1000) {
+            while (!success && generations < 2000) {
 
                 Population offspring = performSelection(population);
                 offspring = crossOverOffspring(offspring);
@@ -49,7 +50,7 @@ public class EvolutionaryAlgorithm {
                 offspring.clear();
 
                 //Use best
-                success = bestCandidate.getFitness() == 64;
+                success = bestCandidate.getFitness() == 2000;
                 generations++;
 
                 if (bestCandidate.getFitness() < population.getBestCandidate().getFitness()) {
@@ -67,6 +68,7 @@ public class EvolutionaryAlgorithm {
             }
 
             auditValues.add((String.valueOf((evaluatePopulation(population)))));
+            bestCandidate.extractRules();
             auditValues.add(String.valueOf(bestCandidate.getFitness()));
             auditValues.add(String.valueOf(generations));
 
@@ -84,12 +86,12 @@ public class EvolutionaryAlgorithm {
 
             System.out.println("\nOutput of One");
             outputOfOne.forEach(rule -> {
-                System.out.println("conditions : " + Arrays.toString(rule.getConditions()) + ", actual : " + rule.getActual() + ", fitness = " + rule.getFitness());
+                System.out.println(rule.toString());
             });
 
             System.out.println("\nOutput of Zero");
             outputOfZero.forEach(rule -> {
-                System.out.println("conditions : " + Arrays.toString(rule.getConditions()) + ", actual : " + rule.getActual() + ", fitness = " + rule.getFitness());
+                System.out.println(rule.toString());
             });
 
         }
@@ -100,15 +102,18 @@ public class EvolutionaryAlgorithm {
     private static void findRuleFitness(ArrayList<Rule> rules) {
 
         //Loop through data
-        for (Data dataElement : data) {
+        for (int i = 0; i < data.size(); i++) {
+            Data dataElement = data.get(i);
             //Loop through candidates rules
-            for (Rule rule : rules) {
+            for (int j = 0; j < rules.size(); j++) {
+                Rule rule = rules.get(j);
                 if (compareArrays(rule.getConditions(), dataElement.getConditions())) {
-                    if (rule.getActual() == dataElement.getOutput()) {
-                        rule.setFitness(rule.getFitness() + 1);
-                    } else {
 
+                    if (rule.getActual() == dataElement.getOutput()) {
+                        rule.setFitness(rule.getFitness()+1);
                     }
+
+                    i++;
                 }
             }
         }
@@ -131,17 +136,35 @@ public class EvolutionaryAlgorithm {
     }
 
     public static Population mutatePopulation(Population offspring) {
+        Random random = new Random();
         for (Candidate candidate : offspring.getPopulation()) {
             for (int i = 0; i < candidate.encoding.length; i++) {
                 float rand = random.nextFloat();
                 boolean mutateThisGene = rand <= mutationProbability;
                 if (mutateThisGene) {
                     //If output
-                    if ((i + 1) % 13 == 0) {
+                    if (!((i + 1) % 13 == 0)) {
 
+                        double mutationChange = random.nextDouble();
 
-                    } else {
-                       //Else mutate that
+                        //Mutate this gene
+                        while(!(mutationChange < mutationBound)){
+                            mutationChange = random.nextDouble();
+                        }
+                        boolean addChange = random.nextBoolean();
+
+                        if (addChange){
+                            candidate.encoding[i] = candidate.encoding[i] + mutationChange;
+                        }else{
+                            candidate.encoding[i] = candidate.encoding[i] - mutationChange;
+                        }
+
+                        if(candidate.encoding[i] < 0.0){
+                            candidate.encoding[i] = 0.0;
+                        }else if (candidate.encoding[i] > 1.0){
+                            candidate.encoding[i] = 1.0;
+                        }
+
                     }
                 }
             }
@@ -170,17 +193,18 @@ public class EvolutionaryAlgorithm {
             System.out.println("Rules are null");
         }
         //Loop through data
-        for (Data dataElement : data) {
+        for (int i = 0; i < data.size(); i++) {
+            Data dataElement = data.get(i);
             //Loop through candidates rules
-            for (Rule rule : candidate.getRules()) {
+            for (int j = 0; j < candidateRules.size(); j++) {
+                Rule rule = candidateRules.get(j);
                 if (compareArrays(rule.getConditions(), dataElement.getConditions())) {
+
                     if (rule.getActual() == dataElement.getOutput()) {
                         fitness++;
-//                        rule.setFitness(rule.getFitness() + 1);
-                        break;
-                    } else {
-                        break;
                     }
+
+                    i++;
                 }
             }
         }
@@ -201,12 +225,18 @@ public class EvolutionaryAlgorithm {
             //check length matches
             if (array1.length != array2.length) {
                 b = false;
-            } else {
-                for (int i = 0; i < array2.length; i++) {
+            } else for (int i = 0; i < array2.length; i++) {
 
-                    //check each falls in range method
+                double evaluating = array2[i];
+                double lowerBound = array1[i].getValues()[0];
+                double higherBound = array1[i].getValues()[1];
 
+
+                if ((evaluating <= lowerBound) || (evaluating >= higherBound)) {
+                    b = false;
+                    break;
                 }
+
             }
         } else {
             b = false;

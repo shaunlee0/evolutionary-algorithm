@@ -13,4 +13,12 @@ public class Range {
             values[1] = value1;
         }
     }
+
+    public double[] getValues() {
+        return values;
+    }
+
+    public void setValues(double[] values) {
+        this.values = values;
+    }
 }

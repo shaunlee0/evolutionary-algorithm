@@ -37,4 +37,15 @@ public class Rule {
     public void setFitness(int fitness) {
         this.fitness = fitness;
     }
+
+    @Override
+    public String toString(){
+        String toReturn = "conditions : ";
+
+        for (int i = 0; i < conditions.length; i++) {
+            toReturn = toReturn + "(" + i + ") " + conditions[i].getValues()[0] + " : " + conditions[i].getValues()[1] + " | ";
+        }
+
+        return toReturn + "actual : " + getActual() + ", fitness " + getFitness();
+    }
 }
