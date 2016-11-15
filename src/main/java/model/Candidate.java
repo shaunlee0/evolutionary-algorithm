@@ -50,9 +50,9 @@ public class Candidate {
             this.rules.clear();
         }
         int count = 0;
+        int reachedInConditions = 0;
         for (int i = 0; i < encoding.length - 12; i+=13) {
             Range[] conditions = new Range[6];
-            int reachedInConditions = 0;
             for (int j = 0; j < 6; j++) {
                 Range range = new Range(encoding[reachedInConditions],encoding[reachedInConditions+1]);
                 conditions[j] = range;

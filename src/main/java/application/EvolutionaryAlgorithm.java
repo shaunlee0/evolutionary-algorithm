@@ -13,16 +13,19 @@ public class EvolutionaryAlgorithm {
     private static final Random random = new Random();
 
     //GA Constants.
-    private static final int populationSize = 500;
+    private static final int populationSize = 150;
     private static final int encodingLength = 260;
-    private static final double mutationProbability = 0.175;
-    private static final double crossoverProbability = 0.5;
+    private static final double mutationProbability = 0.00980;
+    private static final double crossoverProbability = 0.9;
     private static TextFileService textFileService = new TextFileService();
     private static ArrayList<Data> data = textFileService.getDataFromTextFile("data3.txt");
-    private static double mutationBound = 0.05;
+    private static ArrayList<Data> test = textFileService.getDataFromTextFile("data3-test.txt");
 
+    private static double mutationBound = 0.1;
 
     public static void main(String[] args) {
+        System.out.println("Training set size : " + data.size());
+        System.out.println("Test set size : " + test.size());
         ArrayList<ArrayList<String>> audit = new ArrayList<>();
 
         for (int i = 0; i < 1; i++) {
@@ -43,14 +46,14 @@ public class EvolutionaryAlgorithm {
             while (!success && generations < 2000) {
 
                 Population offspring = performSelection(population);
-                offspring = crossOverOffspring(offspring);
                 offspring = mutatePopulation(offspring);
+                offspring = crossOverOffspring(offspring);
                 population.clear();
                 population.fill(offspring.getPopulation());
                 offspring.clear();
 
                 //Use best
-                success = bestCandidate.getFitness() == 2000;
+                success = bestCandidate.getFitness() == 1200;
                 generations++;
 
                 if (bestCandidate.getFitness() < population.getBestCandidate().getFitness()) {
@@ -62,8 +65,9 @@ public class EvolutionaryAlgorithm {
                     population.getPopulation().add(new Candidate(bestCandidate));
                 }
 
-                System.out.println("Total fitness = " + evaluatePopulation(population));
                 System.out.println("Best = " + bestCandidate.getFitness());
+                System.out.println("Total fitness = " + evaluatePopulation(population));
+                System.out.println("Generations = " + generations);
 
             }
 
@@ -76,8 +80,8 @@ public class EvolutionaryAlgorithm {
             audit.add(auditValues);
 
             System.out.println("End of loop at : " + (float) evaluatePopulation(population) + " out of possible " + totalPossibleFitness);
-            bestCandidate.extractRules();
-            System.out.println("best individual has fitness of " + bestCandidate.getFitness());
+//            bestCandidate.extractRules();
+            System.out.println("best individual has fitness of " + bestCandidate.getFitness()  + " out of possible " + totalPossibleFitness);
             System.out.println("Generations " + generations);
             findRuleFitness(bestCandidate.getRules());
             Set<Rule> bestRules = new HashSet<>(bestCandidate.rules);
@@ -108,12 +112,9 @@ public class EvolutionaryAlgorithm {
             for (int j = 0; j < rules.size(); j++) {
                 Rule rule = rules.get(j);
                 if (compareArrays(rule.getConditions(), dataElement.getConditions())) {
-
-                    if (rule.getActual() == dataElement.getOutput()) {
+                    if (Double.compare(rule.getActual(),dataElement.getOutput()) == 0) {
                         rule.setFitness(rule.getFitness()+1);
                     }
-
-                    i++;
                 }
             }
         }
@@ -199,11 +200,9 @@ public class EvolutionaryAlgorithm {
             for (int j = 0; j < candidateRules.size(); j++) {
                 Rule rule = candidateRules.get(j);
                 if (compareArrays(rule.getConditions(), dataElement.getConditions())) {
-
                     if (rule.getActual() == dataElement.getOutput()) {
                         fitness++;
                     }
-
                     i++;
                 }
             }

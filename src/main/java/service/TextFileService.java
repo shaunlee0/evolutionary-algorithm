@@ -13,11 +13,7 @@ import java.util.Arrays;
 import java.util.Scanner;
 import java.util.stream.Stream;
 
-/**
- * Created by shaun on 18/10/16.
- */
 public class TextFileService {
-
 
     public ArrayList<Data> getDataFromTextFile(String fileName) {
 
