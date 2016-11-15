@@ -16,9 +16,9 @@ public class EvolutionaryAlgorithm {
     private static final Random random = new Random();
 
     //GA Constants.
-    private static final int populationSize = 100;
+    private static final int populationSize = 400;
     private static final int encodingLength = 35;
-    private static final double mutationProbability = 0.0065;
+    private static final double mutationProbability = 1.0;
     private static final double crossoverProbability = 0.2;
     private static TextFileService textFileService = new TextFileService();
     private static ArrayList<Data> data = textFileService.getDataFromTextFile("data2.txt");
@@ -27,7 +27,7 @@ public class EvolutionaryAlgorithm {
     public static void main(String[] args) {
         ArrayList<ArrayList<String>> audit = new ArrayList<>();
 
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 8; i++) {
 
             generations = 0;
 
