@@ -13,15 +13,20 @@ public class EvolutionaryAlgorithm {
     private static final Random random = new Random();
 
     //GA Constants.
-    private static final int populationSize = 150;
-    private static final int encodingLength = 260;
-    private static final double mutationProbability = 0.00980;
-    private static final double crossoverProbability = 0.9;
+    private static final int populationSize = 100;
+    private static final int encodingLength = 130;
+    private static double mutationProbability = 0.001;
+    private static double crossoverProbability = 0.9;
+    private static int tournamentSize = 6;
+    private static double mutationBound = 0.4;
+
     private static TextFileService textFileService = new TextFileService();
     private static ArrayList<Data> data = textFileService.getDataFromTextFile("data3.txt");
     private static ArrayList<Data> test = textFileService.getDataFromTextFile("data3-test.txt");
+    private static int mutationAdditions = 0;
+    private static int mutationReductions = 0;
 
-    private static double mutationBound = 0.1;
+
 
     public static void main(String[] args) {
         System.out.println("Training set size : " + data.size());
@@ -31,6 +36,8 @@ public class EvolutionaryAlgorithm {
         for (int i = 0; i < 1; i++) {
 
             generations = 0;
+            int stuckInLocalOptimaCounter = 0;
+            int mutationAdditions = 0;
 
             int totalPossibleFitness = data.size();
             Candidate bestCandidate = new Candidate(encodingLength, false);
@@ -40,29 +47,60 @@ public class EvolutionaryAlgorithm {
             ArrayList<String> auditValues = new ArrayList<>();
 
 
-            boolean success = evaluatePopulation(population) == 1;
+            boolean success = false;
 
 
-            while (!success && generations < 2000) {
+            while (!success) {
 
                 Population offspring = performSelection(population);
                 offspring = mutatePopulation(offspring);
                 offspring = crossOverOffspring(offspring);
+                evaluatePopulation(offspring);
                 population.clear();
                 population.fill(offspring.getPopulation());
                 offspring.clear();
+                population = performSelection(population);
 
                 //Use best
-                success = bestCandidate.getFitness() == 1200;
+                success = bestCandidate.getFitness() == 2000;
                 generations++;
 
                 if (bestCandidate.getFitness() < population.getBestCandidate().getFitness()) {
                     bestCandidate = population.getBestCandidate();
+                    stuckInLocalOptimaCounter = 0;
+                }else{
+                    stuckInLocalOptimaCounter ++;
+                    System.out.println("Stuck in local optima for " + stuckInLocalOptimaCounter + " generations");
                 }
 
-                if (generations > 0) {
-                    population.getPopulation().remove(population.getWorstFromPopulation());
+                if (bestCandidate.getFitness() > population.getBestCandidate().getFitness()) {
+
+                    //Elitism method.
+//                    population.getPopulation().remove(population.getWorstFromPopulation());
+
+                    //Non-elitist method.
+                    population.getPopulation().remove(random.nextInt(populationSize));
                     population.getPopulation().add(new Candidate(bestCandidate));
+                }
+
+                if((stuckInLocalOptimaCounter > 100) && (mutationAdditions <= 3)){
+                    mutationProbability += 0.01;
+                    mutationAdditions ++;
+                    stuckInLocalOptimaCounter = 0;
+                    System.out.println("Mutation additions counter = " + mutationAdditions);
+                    System.out.println("Mutation rate = " + mutationProbability);
+                }else if((stuckInLocalOptimaCounter > 100) && (mutationAdditions >= 3) && (mutationReductions <=3)){
+                    mutationProbability -= 0.01;
+                    mutationReductions ++;
+                    stuckInLocalOptimaCounter = 0;
+                    System.out.println("Mutation reductions counter = " + mutationReductions);
+                    System.out.println("Mutation rate = " + mutationProbability);
+                }
+
+                if((mutationReductions > 3) && (mutationAdditions > 3)){
+                    mutationAdditions = 0;
+                    mutationReductions = 0;
+                    mutationProbability = 0.01;
                 }
 
                 System.out.println("Best = " + bestCandidate.getFitness());
@@ -106,13 +144,13 @@ public class EvolutionaryAlgorithm {
     private static void findRuleFitness(ArrayList<Rule> rules) {
 
         //Loop through data
-        for (int i = 0; i < data.size(); i++) {
-            Data dataElement = data.get(i);
+        for (Data dataElement : data) {
             //Loop through candidates rules
-            for (int j = 0; j < rules.size(); j++) {
-                Rule rule = rules.get(j);
+            for (Rule rule : rules) {
                 if (compareArrays(rule.getConditions(), dataElement.getConditions())) {
-                    if (Double.compare(rule.getActual(),dataElement.getOutput()) == 0) {
+                    int ruleOneActual = (int) rule.getActual();
+                    int dataElementOutput = (int) dataElement.getOutput();
+                    if (ruleOneActual==dataElementOutput) {
                         rule.setFitness(rule.getFitness()+1);
                     }
                 }
@@ -125,19 +163,18 @@ public class EvolutionaryAlgorithm {
         Population offspring = new Population(populationSize, encodingLength);
         for (int i = 0; i < populationSize; i++) {
             //select parents
-            Candidate[] parents = selectParents(population);
+            Candidate[] tournamentCandidates = selectTournamentCandidates(population,tournamentSize);
 
             //select individuals for next population
-            Candidate bestFromParents = getBestFromParents(parents);
+            Candidate bestFromTournament = getBestFromTournament(tournamentCandidates);
 
             //Fill up to population size with offspring obtained from above service
-            offspring.getPopulation().add(bestFromParents);
+            offspring.getPopulation().add(bestFromTournament);
         }
         return offspring;
     }
 
     public static Population mutatePopulation(Population offspring) {
-        Random random = new Random();
         for (Candidate candidate : offspring.getPopulation()) {
             for (int i = 0; i < candidate.encoding.length; i++) {
                 float rand = random.nextFloat();
@@ -173,16 +210,18 @@ public class EvolutionaryAlgorithm {
         return offspring;
     }
 
-    private static Candidate getBestFromParents(Candidate[] parents) {
+    private static Candidate getBestFromTournament(Candidate[] parents) {
+        Candidate fittestIndividual = null;
 
-        double fitnessOfParent1 = evaluateCandidate(parents[0]);
-        double fitnessOfParent2 = evaluateCandidate(parents[1]);
-
-        if (fitnessOfParent1 > fitnessOfParent2) {
-            return parents[0];
-        } else {
-            return parents[1];
+        for (Candidate candidate : parents) {
+            if (fittestIndividual == null) {
+                fittestIndividual = candidate;
+            } else if (candidate.getFitness() > fittestIndividual.getFitness()) {
+                fittestIndividual = candidate;
+            }
         }
+
+        return new Candidate(fittestIndividual);
     }
 
     public static double evaluateCandidate(Candidate candidate) {
@@ -194,16 +233,21 @@ public class EvolutionaryAlgorithm {
             System.out.println("Rules are null");
         }
         //Loop through data
-        for (int i = 0; i < data.size(); i++) {
-            Data dataElement = data.get(i);
+        for (Data dataElement : data) {
             //Loop through candidates rules
             for (int j = 0; j < candidateRules.size(); j++) {
                 Rule rule = candidateRules.get(j);
                 if (compareArrays(rule.getConditions(), dataElement.getConditions())) {
-                    if (rule.getActual() == dataElement.getOutput()) {
+                    int ruleActual = (int) rule.getActual();
+                    int dataOutput = (int) dataElement.getOutput();
+
+                    if (ruleActual == dataOutput) {
                         fitness++;
+                        rule.setFitness(rule.getFitness() + 1);
+                        break;
+                    } else {
+                        break;
                     }
-                    i++;
                 }
             }
         }
@@ -244,7 +288,7 @@ public class EvolutionaryAlgorithm {
     }
 
     public static Population crossOverOffspring(Population offspring) {
-        for (int i = 0; i < populationSize - 1; i++) {
+        for (int i = 0; i < populationSize / 2 ; i+=2) {
 
             float rand = random.nextFloat();
             boolean crossoverParents = rand <= crossoverProbability;
@@ -263,17 +307,23 @@ public class EvolutionaryAlgorithm {
                 }
             }
 
-            i++;
+
         }
 
         return offspring;
     }
 
-    private static Candidate[] selectParents(Population population) {
-        Candidate[] toReturn = new Candidate[2];
+    /**
+     * Return a random array of individuals from the population to use for tournament selection.
+     * @param population : population used to obtain individuals
+     * @param tournamentSize : size of tournament, and individuals to return.
+     * @return : array of individuals selected randomly.
+     */
+    private static Candidate[] selectTournamentCandidates(Population population, int tournamentSize) {
+        Candidate[] toReturn = new Candidate[tournamentSize];
         int populationSize = population.getPopulation().size();
 
-        for (int i = 0; i < 2; i++) {
+        for (int i = 0; i < tournamentSize; i++) {
 
 //          Tournament selection
             int randomInt = random.nextInt(populationSize);
