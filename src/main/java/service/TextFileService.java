@@ -25,8 +25,6 @@ public class TextFileService {
         File file = new File(classLoader.getResource(fileName).getFile());
 
         try (Scanner scanner = new Scanner(file)) {
-            //Skip header line
-            scanner.nextLine();
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
                 String[] rulesAndOutput = line.split(" ");

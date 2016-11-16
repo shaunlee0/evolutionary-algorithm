@@ -13,8 +13,8 @@ public class EvolutionaryAlgorithm {
     private static final Random random = new Random();
 
     //GA Constants.
-    private static final int populationSize = 100;
-    private static final int encodingLength = 130;
+    private static final int populationSize = 90;
+    private static final int encodingLength = 65;
     private static double mutationProbability = 0.001;
     private static double crossoverProbability = 0.9;
     private static int tournamentSize = 6;
@@ -59,10 +59,10 @@ public class EvolutionaryAlgorithm {
                 population.clear();
                 population.fill(offspring.getPopulation());
                 offspring.clear();
-                population = performSelection(population);
+//                population = performSelection(population);
 
                 //Use best
-                success = bestCandidate.getFitness() == 2000;
+                success = bestCandidate.getFitness() == totalPossibleFitness;
                 generations++;
 
                 if (bestCandidate.getFitness() < population.getBestCandidate().getFitness()) {
@@ -76,20 +76,20 @@ public class EvolutionaryAlgorithm {
                 if (bestCandidate.getFitness() > population.getBestCandidate().getFitness()) {
 
                     //Elitism method.
-//                    population.getPopulation().remove(population.getWorstFromPopulation());
+                    population.getPopulation().remove(population.getWorstFromPopulation());
 
                     //Non-elitist method.
-                    population.getPopulation().remove(random.nextInt(populationSize));
+//                    population.getPopulation().remove(random.nextInt(populationSize));
                     population.getPopulation().add(new Candidate(bestCandidate));
                 }
 
-                if((stuckInLocalOptimaCounter > 100) && (mutationAdditions <= 3)){
+                if((stuckInLocalOptimaCounter > 400) && (mutationAdditions <= 3)){
                     mutationProbability += 0.01;
                     mutationAdditions ++;
                     stuckInLocalOptimaCounter = 0;
                     System.out.println("Mutation additions counter = " + mutationAdditions);
                     System.out.println("Mutation rate = " + mutationProbability);
-                }else if((stuckInLocalOptimaCounter > 100) && (mutationAdditions >= 3) && (mutationReductions <=3)){
+                }else if((stuckInLocalOptimaCounter > 400) && (mutationAdditions >= 3) && (mutationReductions <=3)){
                     mutationProbability -= 0.01;
                     mutationReductions ++;
                     stuckInLocalOptimaCounter = 0;
@@ -97,10 +97,16 @@ public class EvolutionaryAlgorithm {
                     System.out.println("Mutation rate = " + mutationProbability);
                 }
 
-                if((mutationReductions > 3) && (mutationAdditions > 3)){
+                if((mutationReductions > 5) && (mutationAdditions > 5)){
                     mutationAdditions = 0;
                     mutationReductions = 0;
                     mutationProbability = 0.01;
+
+                }
+
+                if((generations % 100) == 0){
+                    bestCandidate.extractRules();
+                    System.out.println("Best candidate rule set matches " + validateRuleSet(bestCandidate.getRules()) + " in the validation set");
                 }
 
                 System.out.println("Best = " + bestCandidate.getFitness());
@@ -135,10 +141,40 @@ public class EvolutionaryAlgorithm {
             outputOfZero.forEach(rule -> {
                 System.out.println(rule.toString());
             });
+            bestCandidate.extractRules();
+            System.out.println("Best candidate rule set matches " + String.valueOf(validateRuleSet(bestCandidate.getRules())) + " in the validation set");
 
         }
             String csv = "/home/shaun/Desktop/ga.csv";
             CsvFileWriter.writeCsvFile(csv, audit);
+    }
+
+    private static int validateRuleSet(ArrayList<Rule> candidateRules){
+        double fitness = 0;
+
+        if (candidateRules == null) {
+            System.out.println("Rules are null");
+        }
+        //Loop through data
+        for (Data dataElement : test) {
+            //Loop through candidates rules
+            for (int j = 0; j < candidateRules.size(); j++) {
+                Rule rule = candidateRules.get(j);
+                if (compareArrays(rule.getConditions(), dataElement.getConditions())) {
+                    int ruleActual = (int) rule.getActual();
+                    int dataOutput = (int) dataElement.getOutput();
+
+                    if (ruleActual == dataOutput) {
+                        fitness++;
+                        rule.setFitness(rule.getFitness() + 1);
+                        break;
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+        return (int)fitness;
     }
 
     private static void findRuleFitness(ArrayList<Rule> rules) {

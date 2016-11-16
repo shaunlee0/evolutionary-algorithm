@@ -19,7 +19,10 @@ public class EvolutionaryAlgorithmTest {
     }
 
     @Test
-    public void shouldMutateIndividuals(){
-
+    public void shouldGetTopFitness(){
+//        Candidate candidate = new Candidate(65,false);
+//        double[] encoding = new double[65];
+//        encoding
+//        candidate.setEncoding();
     }
 }
