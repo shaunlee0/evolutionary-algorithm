@@ -83,26 +83,26 @@ public class EvolutionaryAlgorithm {
                     population.getPopulation().add(new Candidate(bestCandidate));
                 }
 
-                if((stuckInLocalOptimaCounter > 400) && (mutationAdditions <= 3)){
-                    mutationProbability += 0.01;
-                    mutationAdditions ++;
-                    stuckInLocalOptimaCounter = 0;
-                    System.out.println("Mutation additions counter = " + mutationAdditions);
-                    System.out.println("Mutation rate = " + mutationProbability);
-                }else if((stuckInLocalOptimaCounter > 400) && (mutationAdditions >= 3) && (mutationReductions <=3)){
-                    mutationProbability -= 0.01;
-                    mutationReductions ++;
-                    stuckInLocalOptimaCounter = 0;
-                    System.out.println("Mutation reductions counter = " + mutationReductions);
-                    System.out.println("Mutation rate = " + mutationProbability);
-                }
-
-                if((mutationReductions > 5) && (mutationAdditions > 5)){
-                    mutationAdditions = 0;
-                    mutationReductions = 0;
-                    mutationProbability = 0.01;
-
-                }
+//                if((stuckInLocalOptimaCounter > 400) && (mutationAdditions <= 3)){
+//                    mutationProbability += 0.01;
+//                    mutationAdditions ++;
+//                    stuckInLocalOptimaCounter = 0;
+//                    System.out.println("Mutation additions counter = " + mutationAdditions);
+//                    System.out.println("Mutation rate = " + mutationProbability);
+//                }else if((stuckInLocalOptimaCounter > 400) && (mutationAdditions >= 3) && (mutationReductions <=3)){
+//                    mutationProbability -= 0.01;
+//                    mutationReductions ++;
+//                    stuckInLocalOptimaCounter = 0;
+//                    System.out.println("Mutation reductions counter = " + mutationReductions);
+//                    System.out.println("Mutation rate = " + mutationProbability);
+//                }
+//
+//                if((mutationReductions > 5) && (mutationAdditions > 5)){
+//                    mutationAdditions = 0;
+//                    mutationReductions = 0;
+//                    mutationProbability = 0.01;
+//
+//                }
 
                 if((generations % 100) == 0){
                     bestCandidate.extractRules();
